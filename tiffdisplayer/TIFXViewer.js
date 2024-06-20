@@ -4,13 +4,13 @@ import { Image, Layer, Stage } from "react-konva";
 // import UTIF from "utif";
 import Tiff from 'tiff'
 
-const TIFXViewer = () => {
+const TIFXViewer = (paramers) => {
 
   const [image, setImage] = useState();
 
   useEffect(() => {
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://127.0.0.1:5500/flaniganResume.tiff");
+    xhr.open("GET", paramers.tiffurl);
     xhr.responseType = "arraybuffer";
     xhr.onload = (e) => {
      

@@ -1,16 +1,21 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import * as React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 // import { TIFFViewer } from "react-tiff"
 // import tiffFile from './images/flaniganResume.tiff';
 import TIFFViewer from "./TIFFViewer"
 import Viewer from "./Components/Viewer"
 import TIFXViewer from "./TIFXViewer"
+import MYTIFViewer from "./MYTIFViewer"
+import ImageViewer from "./Components/ImageViewer"
+
 
 export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 
     rootContainer: HTMLDivElement;
-
+    tiffurl: string;
+    notifyOutputChanged: () => void;
+    root: Root
     /**
      * Empty constructor.
      */
@@ -29,6 +34,14 @@ export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs
     public init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged: () => void, state: ComponentFramework.Dictionary, container: HTMLDivElement): void {
         // Add control initialization code
         this.rootContainer = container;
+
+        this.tiffurl = context.parameters.tiffurl.raw || "";
+
+        this.notifyOutputChanged = notifyOutputChanged;
+
+        this.root = createRoot(this.rootContainer);
+
+
     }
 
 
@@ -38,17 +51,33 @@ export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
         // Add code to update control view
-        // const props = {
-        //      tiff: {tiffFile}
-        // };
-        const root = createRoot(this.rootContainer);
+        const props = {
+            url: context.parameters.tiffurl.raw
+        };
         // root.render( React.createElement(
-        //         TIFFViewer
+        //        Viewer,{tiffurl:this.tiffurl} 
         //     ) );
 
-        root.render(React.createElement(
-           Viewer 
+        // console.log('render');
+        // console.log(this.tiffurl)
+        // console.log(context.parameters.tiffurl.raw)
+
+        // this.root.render(React.createElement(
+        //     MYTIFViewer, { url: context.parameters.tiffurl.raw }
+        // ));
+
+        this.root.render(React.createElement(
+            MYTIFViewer, { url: context.parameters.tiffurl.raw || "" }
         ));
+
+        //  this.root.render( 
+        //     <MYTIFViewer/>  
+        // );
+
+        // root.render(React.createElement(
+        //    ImageViewer,
+        //    {tiffurl:this.tiffurl }
+        // ));
     }
 
     /**

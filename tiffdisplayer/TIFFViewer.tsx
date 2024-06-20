@@ -10,7 +10,7 @@ const TIFFViewer = (page:any) => {
 const pages = useTiffContext();
   useEffect(() => {
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://127.0.0.1:5500/flaniganResume.tiff");
+    xhr.open("GET", pages.tiffurl);
     xhr.responseType = "arraybuffer";
     xhr.onload = (e: any) => {
       const ifds = UTIF.decode(e?.target?.response);
@@ -44,8 +44,8 @@ const pages = useTiffContext();
   }, [page.index]);
   return (
     <Stage
-      width={3000}
-      height={3000}
+      width={1200}
+      height={800}
       style={{ overflow:"auto",border: "1px solid #000"}}
       className={"zoom-stage"}
     >

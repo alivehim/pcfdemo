@@ -23,17 +23,19 @@ const Context = createContext(
 
 // While I probably don't need context for an app this small I like to set up ahead of time just in case and to avoid prop drilling.
 
-export const TiffContext = ({ children }) => {
+export const TiffContext = ({ children,tiffurlx}) => {
   // The pages array is set on mount and used in SelectPage.js. This will likely have to change
   const [pages, setPages] = useState([]);
 
   // pageNumber is set in SelectPage.js and used in TiffDisplay.js
   const [pageNumber, setPageNumber] = useState(0);
 
+  console.log(tiffurlx)
+  const [tiffurl,setTiffUrl]=useState(tiffurlx.tiffurl);
   // UTIF to just return pages array
   useEffect(() => {
     const xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://127.0.0.1:5500/flaniganResume.tiff");
+    xhr.open("GET", tiffurl );
     xhr.responseType = "arraybuffer";
     xhr.onload = (e) => {
       const ifds = UTIF.decode(e.target.response);
@@ -53,6 +55,8 @@ export const TiffContext = ({ children }) => {
       setPageNumber,
       pages,
       setPages,
+      tiffurl,
+      setTiffUrl
     }),
     [pageNumber, pages]
   );

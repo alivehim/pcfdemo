@@ -3,7 +3,7 @@ import React from "react";
 import Zoom from "./ZoomPanPinch";
 import  {TiffContext}  from "./TiffContext";
 import  {SelectPage}  from "./SelectPage";
-export const Viewer = () => {
+export const Viewer = (tiffurl:any) => {
 
   return (
 
@@ -13,13 +13,13 @@ export const Viewer = () => {
     //   </div>
     // </TiffContext>
 
-    <TiffContext>
+    <TiffContext tiffurlx={tiffurl}>
       <Card className="tiff-container d-flex justify-content-center text-center">
         <CardTitle className="card-head">React Tiff Viewer</CardTitle>
         <CardBody>
           {" "}
           <SelectPage />
-          <Zoom />
+          <Zoom   />
         </CardBody>
       </Card>
     </TiffContext>
