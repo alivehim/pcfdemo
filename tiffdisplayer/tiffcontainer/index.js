@@ -100,13 +100,13 @@ export const TIFFViewer = function TiffFileViewer(
   const { t, i18n } = useTranslation()
 
   const [size, setSize] = useState({ width: 0, height: 0 });
-  let [canvasWidth, setCanvasWidth] = useState(0);
-  let [canvasHeight, setCanvasHeight] = useState(0);
-  let [mouseDowmFlag, setMouseDowmFlag] = useState(false);
+  const [canvasWidth, setCanvasWidth] = useState(0);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+  const [mouseDowmFlag, setMouseDowmFlag] = useState(false);
   /** 记录鼠标按下的坐标 */
-  let [mouseDowmPos, setMouseDowmPos] = useState({ x: 0, y: 0 });
+  const [mouseDowmPos, setMouseDowmPos] = useState({ x: 0, y: 0 });
 
-    let [offsetDis, setOffsetDis] = useState({left: 0, top: 0});
+    const [offsetDis, setOffsetDis] = useState({left: 0, top: 0});
 
   // console.log("x" + tiff)
   // states
@@ -114,182 +114,222 @@ export const TIFFViewer = function TiffFileViewer(
   const [, setTiffs] = React.useState([])
   const [pages, setPages] = React.useState([])
   const [page, setPage] = React.useState(0)
-
+ const [pageCount, setPageCount] = React.useState(0)
 
   // refs
   const canvasRef = React.useRef(null)
+    const canvasXRef = React.useRef(null)
   const btnPrintRef = React.useRef(null)
   const paginateLTRRef = React.useRef(null)
   const paginateBottomRef = React.useRef(null)
+
+  const [buffer,setBuffer] = useState([])
 
   if (tiff != _tiff) {
     setTiff(tiff);
   }
 
 
-  function imgLoaded(buffer) {
-    var ifds = UTIF.decode(buffer)
-    console.log(canvasWidth)
-    const _tiffs = ifds.map(function (ifd, index) {
+  
+ const loadImage = (buffer1)=>{
 
-
-      UTIF.decodeImage(buffer, ifd)
+var ifds = UTIF.decode(buffer1)
+   var ifd = ifds[page]
+      UTIF.decodeImage(buffer1, ifd)
       var rgba = UTIF.toRGBA8(ifd)
-      var canvas = document.createElement('canvas')
+      var canvas =  canvasXRef.current
+
       canvas.width = ifd.width
       canvas.height = ifd.height
 
 
       console.log(`write width ${ifds[0].width} and ${ifds[0].height} `)
-      canvasWidth = ifd.width
-      canvasHeight = ifd.height
+      setCanvasWidth( ifd.width)
+      setCanvasHeight (ifd.height)
 
-      canvas.onwheel = (event) => {
-        console.log(event)
-        event.stopPropagation();
-
-        const canvas = event.target;
-        const ctx = canvas.getContext('2d');
-        // 向上为负，向下为正
-        const bigger = event.deltaY > 0 ? -1 : 1;
-        // 放大比例
-        const enlargeRate = 1.2;
-        // 缩小比例
-        const shrinkRate = 0.8;
-
-        const rate = bigger > 0 ? enlargeRate : shrinkRate;
-
-        const width = canvasWidth * rate;
-        const height = canvasHeight * rate;
-        console.log(width)
-        console.log(height)
-        canvasWidth = width
-        canvasHeight = height
-
-        ctx.clearRect(0, 0, ifd.width, ifd.height);
-
-        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
-        var img = ctx.createImageData(ifd.width, ifd.height)
-        img.data.set(rgba)
-        // const { height: initHeight, naturalHeight, naturalWidth } = img;
-
-        resizeImageData(img, width, height).then(data => {
-
-          // ctx.putImageData(data, 0, 0)
-          ctx.putImageData(data, offsetDis.left, offsetDis.top)
-
-          console.log(`set width:${width}`)
-          canvasWidth = width
-          canvasHeight = height
-        })
-
-        return false
-
-      }
-
-      canvas.onmousedown = (event) => {
-        event.stopPropagation();
-        event.preventDefault(); // 阻止浏览器默认行为，拖动会打开图片
-        const { clientX, clientY } = event;
-        // 相对于canvas坐标
-        const canvas = event.target;
-        const pos = windowToCanvas(canvas, clientX, clientY);
-        canvas.style.cursor = 'move';
-        // setMouseDowmFlag(true); // 控制只有在鼠标按下后才会执行mousemove
-
-        mouseDowmFlag=true;
-        // setMouseDowmPos({
-        //   x: pos.x,
-        //   y: pos.y,
-        // });
-
-        mouseDowmPos = {
-          x: pos.x,
-          y: pos.y,
-        }
-      }
-
-      canvas.onmousemove = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-        if (!mouseDowmFlag) return;
-        const { clientX, clientY } = event;
-        const canvas = event.target
-        // 相对于canvas坐标
-        const pos = windowToCanvas(canvas, clientX, clientY)
-        // 偏移量
-        const diffX = pos.x - mouseDowmPos.x;
-        const diffY = pos.y - mouseDowmPos.y;
-        if ((diffX === 0 && diffY === 0)) return;
-        // 坐标定位 = 上次定位 + 偏移量
-        const offsetX = parseInt(`${diffX + offsetDis.left}`, 10);
-        const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
-        // 平移图片
-        const ctx = canvas.getContext('2d');
-       
-         ctx.clearRect(0, 0, ifd.width, ifd.height);
-
-        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
-        var img = ctx.createImageData(ifd.width, ifd.height)
-        img.data.set(rgba)
-        // const { height: initHeight, naturalHeight, naturalWidth } = img;
-
-        resizeImageData(img, canvasWidth, canvasHeight).then(data => {
-
-          ctx.putImageData(data, offsetX, offsetY )
-
-      
-        })
- 
-
-        // 更新按下的坐标
-        setMouseDowmPos({
-          x: pos.x,
-          y: pos.y,
-        });
-
-          mouseDowmPos = {
-          x: pos.x,
-          y: pos.y,
-        }
-
-        // 更新上次坐标
-        setOffsetDis({
-          left: offsetX,
-          top: offsetY,
-        })
-
-        offsetDis={
-          left: offsetX,
-          top: offsetY,
-        }
-      }
-
-      canvas.onmouseup = (event)=>{
-        event.stopPropagation();
-    event.preventDefault();
-    const canvas = event.target  ;
-    canvas.style.cursor = 'default';
-    setMouseDowmFlag(false);
-     mouseDowmFlag=false;
-      }
-
+    
 
 
       var ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, ifd.width, ifd.height);
       var img = ctx.createImageData(ifd.width, ifd.height)
       img.data.set(rgba)
       ctx.putImageData(img, 0, 0)
-      if (index === 0)
-        document.getElementById('tiff-inner-container').appendChild(canvas)
 
-      return canvas
-    })
+      // setPages([...pages, 1]);
+      // setPages([...pages, 1]);
+
+      setPageCount(ifds.length)
+ }
+
+  function imgLoaded(buffer1) {
+
+    setBuffer(buffer1)
+loadImage(buffer1);
+
+    // var ifds = UTIF.decode(buffer)
+ 
+    // const _tiffs = ifds.map(function (ifd, index) {
+
+
+    //   var ifd = ifds[page]
+    //   UTIF.decodeImage(buffer, ifd)
+    //   var rgba = UTIF.toRGBA8(ifd)
+    //   var canvas = document.createElement('canvas')
+    //   canvas.width = ifd.width
+    //   canvas.height = ifd.height
+
+
+    //   console.log(`write width ${ifds[0].width} and ${ifds[0].height} `)
+    //   setCanvasWidth( ifd.width)
+    //   setCanvasHeight (ifd.height)
+
+    // //   canvas.onwheel = (event) => {
+    // //     console.log(event)
+    // //     event.stopPropagation();
+
+    // //     const canvas = event.target;
+    // //     const ctx = canvas.getContext('2d');
+    // //     // 向上为负，向下为正
+    // //     const bigger = event.deltaY > 0 ? -1 : 1;
+    // //     // 放大比例
+    // //     const enlargeRate = 1.2;
+    // //     // 缩小比例
+    // //     const shrinkRate = 0.8;
+
+    // //     const rate = bigger > 0 ? enlargeRate : shrinkRate;
+
+    // //     const width = canvasWidth * rate;
+    // //     const height = canvasHeight * rate;
+    // //     console.log(width)
+    // //     console.log(height)
+    // //     canvasWidth = width
+    // //     canvasHeight = height
+
+    // //     ctx.clearRect(0, 0, ifd.width, ifd.height);
+
+    // //     // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+    // //     var img = ctx.createImageData(ifd.width, ifd.height)
+    // //     img.data.set(rgba)
+    // //     // const { height: initHeight, naturalHeight, naturalWidth } = img;
+
+    // //     resizeImageData(img, width, height).then(data => {
+
+    // //       // ctx.putImageData(data, 0, 0)
+    // //       ctx.putImageData(data, offsetDis.left, offsetDis.top)
+
+    // //       console.log(`set width:${width}`)
+    // //       canvasWidth = width
+    // //       canvasHeight = height
+    // //     })
+
+    // //     return false
+
+    // //   }
+
+    // //   canvas.onmousedown = (event) => {
+    // //     event.stopPropagation();
+    // //     event.preventDefault(); // 阻止浏览器默认行为，拖动会打开图片
+    // //     const { clientX, clientY } = event;
+    // //     // 相对于canvas坐标
+    // //     const canvas = event.target;
+    // //     const pos = windowToCanvas(canvas, clientX, clientY);
+    // //     canvas.style.cursor = 'move';
+    // //     // setMouseDowmFlag(true); // 控制只有在鼠标按下后才会执行mousemove
+
+    // //     mouseDowmFlag=true;
+    // //     // setMouseDowmPos({
+    // //     //   x: pos.x,
+    // //     //   y: pos.y,
+    // //     // });
+
+    // //     mouseDowmPos = {
+    // //       x: pos.x,
+    // //       y: pos.y,
+    // //     }
+    // //   }
+
+    // //   canvas.onmousemove = (event) => {
+    // //     event.stopPropagation();
+    // //     event.preventDefault();
+    // //     if (!mouseDowmFlag) return;
+    // //     const { clientX, clientY } = event;
+    // //     const canvas = event.target
+    // //     // 相对于canvas坐标
+    // //     const pos = windowToCanvas(canvas, clientX, clientY)
+    // //     // 偏移量
+    // //     const diffX = pos.x - mouseDowmPos.x;
+    // //     const diffY = pos.y - mouseDowmPos.y;
+    // //     if ((diffX === 0 && diffY === 0)) return;
+    // //     // 坐标定位 = 上次定位 + 偏移量
+    // //     const offsetX = parseInt(`${diffX + offsetDis.left}`, 10);
+    // //     const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
+    // //     // 平移图片
+    // //     const ctx = canvas.getContext('2d');
+       
+    // //      ctx.clearRect(0, 0, ifd.width, ifd.height);
+
+    // //     // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+    // //     var img = ctx.createImageData(ifd.width, ifd.height)
+    // //     img.data.set(rgba)
+    // //     // const { height: initHeight, naturalHeight, naturalWidth } = img;
+
+    // //     resizeImageData(img, canvasWidth, canvasHeight).then(data => {
+
+    // //       ctx.putImageData(data, offsetX, offsetY )
+
+      
+    // //     })
+ 
+
+    // //     // 更新按下的坐标
+    // //     setMouseDowmPos({
+    // //       x: pos.x,
+    // //       y: pos.y,
+    // //     });
+
+    // //       mouseDowmPos = {
+    // //       x: pos.x,
+    // //       y: pos.y,
+    // //     }
+
+    // //     // 更新上次坐标
+    // //     setOffsetDis({
+    // //       left: offsetX,
+    // //       top: offsetY,
+    // //     })
+
+    // //     offsetDis={
+    // //       left: offsetX,
+    // //       top: offsetY,
+    // //     }
+    // //   }
+
+    // //   canvas.onmouseup = (event)=>{
+    // //     event.stopPropagation();
+    // // event.preventDefault();
+    // // const canvas = event.target  ;
+    // // canvas.style.cursor = 'default';
+    // // setMouseDowmFlag(false);
+    // //  mouseDowmFlag=false;
+    // //   }
 
 
 
-    setPages(_tiffs)
-    setTiffs(_tiffs)
+    //   var ctx = canvas.getContext('2d')
+    //   var img = ctx.createImageData(ifd.width, ifd.height)
+    //   img.data.set(rgba)
+    //   ctx.putImageData(img, 0, 0)
+    //   // if (index === 0)
+    //   //   document.getElementById('tiff-inner-container').appendChild(canvas)
+
+    //   return canvas
+    // })
+
+
+
+    // setPages(_tiffs)
+    // setTiffs(_tiffs)
   }
 
   const windowToCanvas = (canvas, x, y) => {
@@ -365,7 +405,7 @@ export const TIFFViewer = function TiffFileViewer(
   }
 
   const handleNextClick = () => {
-    if (page < pages.length - 1) {
+    if (page < pageCount - 1) {
       setPage(page + 1)
     }
   }
@@ -423,9 +463,16 @@ export const TIFFViewer = function TiffFileViewer(
 
 
   useEffect(() => {
-    if (pages.length > 0) {
-      canvasRef.current.innerHTML = ''
-      canvasRef.current.appendChild(pages[page])
+    // if (pages.length > 0) {
+    //   canvasRef.current.innerHTML = ''
+    //   canvasRef.current.appendChild(pages[page])
+    // }
+
+    if(buffer && buffer.length!=0){
+
+      console.log(page)
+      console.log('page changed')
+       loadImage(buffer)
     }
   }, [page, pages])
 
@@ -445,6 +492,143 @@ export const TIFFViewer = function TiffFileViewer(
   //     return canvasRef.current
   //   }
   // }))
+
+  const handleWheelImage = (event)=>{
+        console.log(event)
+        event.stopPropagation();
+
+            event.preventDefault();
+
+      var canvas =  canvasXRef.current
+ 
+
+  
+        const ctx = canvas.getContext('2d');
+        // 向上为负，向下为正
+        const bigger = event.deltaY > 0 ? -1 : 1;
+        // 放大比例
+        const enlargeRate = 1.2;
+        // 缩小比例
+        const shrinkRate = 0.8;
+
+        const rate = bigger > 0 ? enlargeRate : shrinkRate;
+
+        const width = canvasWidth * rate;
+        const height = canvasHeight * rate;
+        console.log(width)
+        console.log(height)
+        setCanvasWidth( width)
+        setCanvasHeight( height)
+
+        var ifds = UTIF.decode(buffer)
+   var ifd = ifds[page]
+      UTIF.decodeImage(buffer, ifd)
+      var rgba = UTIF.toRGBA8(ifd)
+
+        ctx.clearRect(0, 0, ifd.width, ifd.height);
+
+        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+        var img = ctx.createImageData(ifd.width, ifd.height)
+        img.data.set(rgba)
+        // const { height: initHeight, naturalHeight, naturalWidth } = img;
+
+        resizeImageData(img, width, height).then(data => {
+
+          // ctx.putImageData(data, 0, 0)
+          ctx.putImageData(data, offsetDis.left, offsetDis.top)
+
+          console.log(`set width:${width}`)
+          // canvasWidth = width
+          // canvasHeight = height
+        })
+
+        return false
+
+  }
+
+  const handleMouseDown  = (event)=>{
+    event.stopPropagation();
+        event.preventDefault(); // 阻止浏览器默认行为，拖动会打开图片
+        const { clientX, clientY } = event;
+        // 相对于canvas坐标
+        const canvas = event.target;
+        const pos = windowToCanvas(canvas, clientX, clientY);
+        canvas.style.cursor = 'move';
+        setMouseDowmFlag(true); // 控制只有在鼠标按下后才会执行mousemove
+
+        setMouseDowmPos({
+          x: pos.x,
+          y: pos.y,
+        });
+
+ 
+  }
+
+  const handleMouseMove = (event)=>{
+
+        event.stopPropagation();
+        event.preventDefault();
+
+         var ifds = UTIF.decode(buffer)
+   var ifd = ifds[page]
+      UTIF.decodeImage(buffer, ifd)
+      var rgba = UTIF.toRGBA8(ifd)
+
+        if (!mouseDowmFlag) return;
+        const { clientX, clientY } = event;
+        const canvas = event.target
+        // 相对于canvas坐标
+        const pos = windowToCanvas(canvas, clientX, clientY)
+        // 偏移量
+        const diffX = pos.x - mouseDowmPos.x;
+        const diffY = pos.y - mouseDowmPos.y;
+        if ((diffX === 0 && diffY === 0)) return;
+        // 坐标定位 = 上次定位 + 偏移量
+        const offsetX = parseInt(`${diffX + offsetDis.left}`, 10);
+        const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
+        // 平移图片
+        const ctx = canvas.getContext('2d');
+       
+         ctx.clearRect(0, 0, ifd.width, ifd.height);
+
+        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+        var img = ctx.createImageData(ifd.width, ifd.height)
+        img.data.set(rgba)
+        // const { height: initHeight, naturalHeight, naturalWidth } = img;
+
+        resizeImageData(img, canvasWidth, canvasHeight).then(data => {
+
+          ctx.putImageData(data, offsetX, offsetY )
+
+      
+        })
+ 
+
+        // 更新按下的坐标
+        setMouseDowmPos({
+          x: pos.x,
+          y: pos.y,
+        });
+
+     
+
+        // 更新上次坐标
+        setOffsetDis({
+          left: offsetX,
+          top: offsetY,
+        })
+ 
+
+  }
+
+  const handleMouseUp = (event)=>{
+     event.stopPropagation();
+    event.preventDefault();
+    const canvas = event.target  ;
+    canvas.style.cursor = 'default';
+    setMouseDowmFlag(false);
+  }
+
 
   return (
     <div className={styles.container} id='tiff-container'   {...rest}>
@@ -477,9 +661,19 @@ export const TIFFViewer = function TiffFileViewer(
           id='tiff-inner-container'
           className={styles.inner}
           ref={canvasRef}
-        />
+        >
+           <canvas 
+        ref={canvasXRef} 
+ 
+        onWheel={handleWheelImage}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      ></canvas>
 
-        {paginate === 'ltr' && pages.length > 1 && (
+          </div>
+
+        {paginate === 'ltr' &&  pageCount > 1 && (
           <div className={styles.absolute} id='absolute' ref={paginateLTRRef}>
             <button
               style={{ backgroundColor: buttonColor }}
@@ -492,7 +686,7 @@ export const TIFFViewer = function TiffFileViewer(
             </button>{' '}
             <button
               style={{ backgroundColor: buttonColor }}
-              disabled={page === pages.length - 1}
+              disabled={page === pageCount - 1}
               onClick={handleNextClick}
               className={styles.button}
               type='button'
@@ -503,7 +697,7 @@ export const TIFFViewer = function TiffFileViewer(
         )}
       </div>
 
-      {paginate === 'bottom' && pages.length > 1 && (
+      {paginate === 'bottom' &&  pageCount > 1 && (
         <div id='footer' ref={paginateBottomRef}>
           <button
             style={{ backgroundColor: buttonColor }}
@@ -515,11 +709,11 @@ export const TIFFViewer = function TiffFileViewer(
             {t('Previous')}
           </button>
           <span className={styles.span}>
-            {t('Page of total', { page: page + 1, total: pages.length })}
+            {t('Page of total', { page: page + 1, total: pageCount })}
           </span>
           <button
             style={{ backgroundColor: buttonColor }}
-            disabled={page === pages.length - 1}
+            disabled={page === pageCount}
             onClick={handleNextClick}
             className={styles.button}
             type='button'
