@@ -1,0 +1,196 @@
+/* @font-face {
+    font-family: 'icomoon';
+    src: url('fonts/icomoon.eot');
+    src: url('fonts/icomoon.eot?#iefix') format('embedded-opentype'),
+        url('fonts/icomoon.ttf') format('truetype'),
+        url('fonts/icomoon.woff') format('woff'),
+        url('fonts/icomoon.svg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+} */
+
+
+.react-viewer-inline {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+
+
+.react-viewer ul {
+    margin: 0;
+    padding: 0;
+}
+
+.react-viewer li {
+    list-style: none;
+}
+
+.react-viewer {
+    opacity: 0;
+}
+
+.react-viewer-mask {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #373737;
+    background-color: rgba(55, 55, 55, 0.6);
+    height: 100%;
+    filter: alpha(opacity=50);
+    z-index: 1000;
+}
+
+.react-viewer-btn {
+    background-color: rgba(0, 0, 0, .5);
+    color: white;
+}
+
+.react-viewer-btn:hover {
+    background-color: rgba(0, 0, 0, .8);
+}
+
+.react-viewer-close {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    overflow: hidden;
+    width: 40px;
+    height: 40px;
+    border-radius: 0 0 0 40px;
+    cursor: pointer;
+    z-index: 1000 + 10;
+}
+
+.react-viewer-close>i {
+    position: relative;
+    top: 4px;
+    left: 18px;
+}
+
+.react-viewer-canvas {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 1000 + 5;
+
+    >img {
+        display: block;
+        width: auto;
+        height: auto;
+        user-select: none;
+    }
+
+    >img.drag {
+        cursor: move;
+    }
+}
+
+.react-viewer-footer {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    text-align: center;
+    z-index: 1000 + 5;
+}
+
+.react-viewer-inline>.react-viewer-mask,
+.react-viewer-inline>.react-viewer-close,
+.react-viewer-inline>.react-viewer-canvas,
+.react-viewer-inline>.react-viewer-footer {
+    position: absolute;
+}
+
+.react-viewer-attribute {
+    margin: 0 20px;
+    margin-bottom: 6px;
+    opacity: .8;
+    color: #ccc;
+    font-size: 15px;
+}
+
+.react-viewer-showTotal {
+    float: right;
+}
+
+
+.react-viewer-toolbar {
+    overflow: hidden;
+    height: 28px;
+    margin-bottom: 6px !important;
+}
+
+.react-viewer-toolbar li {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 28px;
+    margin-right: 3px;
+    cursor: pointer;
+    line-height: 28px;
+}
+
+.react-viewer-toolbar li:hover {
+    background-color: rgba(0, 0, 0, .8);
+}
+
+li.empty {
+    background-color: transparent;
+    cursor: default;
+}
+
+.react-viewer-navbar {
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, .5);
+}
+
+
+.react-viewer-list {
+    height: 50px;
+    padding: 1px;
+    text-align: left;
+}
+
+.react-viewer-list>li {
+    display: inline-block;
+    width: 30px;
+    height: 50px;
+    cursor: pointer;
+    overflow: hidden;
+    margin-right: 1px;
+}
+
+.react-viewer-list>li>img {
+    width: 30px + 30px;
+    height: 50px;
+    margin-left: 3-(30px + 30px -30px) /2;
+    opacity: .5;
+}
+
+.react-viewer-list>li.active>img {
+    opacity: 1;
+}
+
+
+.react-viewer-transition {
+    transition: opacity .3s ease-out;
+}
+
+.react-viewer-image-transition {
+    transition-property: width, height, margin, transform;
+    transition-duration: .3s;
+    transition-timing-function: ease-out;
+}
+
+.react-viewer-list-transition {
+    transition: margin .3s ease-out;
+}

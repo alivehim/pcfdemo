@@ -1,0 +1,70 @@
+.react-viewer-icon {
+  font-family: 'icomoon' !important;
+  display: inline-block;
+  font-style: normal;
+  vertical-align: baseline;
+  text-align: center;
+  text-transform: none;
+  text-rendering: auto;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: white;
+  font-size: 13px;
+}
+
+.react-viewer-icon-zoomIn:before {
+  content: '\ea0a';
+}
+
+.react-viewer-icon-zoomOut:before {
+  content: '\ea0b';
+}
+
+.react-viewer-icon-prev:before {
+  content: '\ea38';
+}
+
+.react-viewer-icon-next:before {
+  content: '\ea34';
+}
+
+.react-viewer-icon-close:before {
+  content: '\ea0f';
+}
+
+.react-viewer-icon-rotateLeft:before {
+  content: '\e967';
+}
+
+.react-viewer-icon-rotateRight:before {
+  content: '\e968';
+}
+
+.react-viewer-icon-reset:before {
+  content: '\e984';
+}
+
+.react-viewer-icon-scaleX:before {
+  content: '\ea60';
+}
+
+.react-viewer-icon-scaleY:before {
+  content: '\ea5f';
+}
+
+.react-viewer-icon-download:before {
+  content: '\e9c7';
+}
+
+
+.circle-loading {
+  box-sizing: border-box;
+  width: 80px;
+  height: 80px;
+  border-radius: 100%;
+  border: 10px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #FFF;
+  animation: spin 1s infinite linear;
+}

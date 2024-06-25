@@ -8,11 +8,7 @@ export const Zoom = (tiffurl:any) => {
   const { pageNumber } = useTiffContext();
 
   return (
-    <TransformWrapper>
-      <TransformComponent>
         <TiffDisplay index={pageNumber} />
-      </TransformComponent>
-    </TransformWrapper>
   );
 };
 

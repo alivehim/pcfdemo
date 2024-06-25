@@ -8,6 +8,8 @@ import Viewer from "./Components/Viewer"
 import TIFXViewer from "./TIFXViewer"
 import MYTIFViewer from "./MYTIFViewer"
 import ImageViewer from "./Components/ImageViewer"
+import ImageViewer2 from "./imagecontainer/index"
+import CanvasXY from "./Components/CanvasXY"
 
 
 export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs, IOutputs> {
@@ -51,11 +53,14 @@ export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
         // Add code to update control view
+
+        const filetype = context.parameters.filetype.raw || "tiff";
+
         const props = {
             url: context.parameters.tiffurl.raw
         };
-        // root.render( React.createElement(
-        //        Viewer,{tiffurl:this.tiffurl} 
+        // this.root.render( React.createElement(
+        //        Viewer,{tiffurl:context.parameters.tiffurl.raw || ""} 
         //     ) );
 
         // console.log('render');
@@ -66,18 +71,43 @@ export class tiffdisplayer implements ComponentFramework.StandardControl<IInputs
         //     MYTIFViewer, { url: context.parameters.tiffurl.raw }
         // ));
 
-        this.root.render(React.createElement(
-            MYTIFViewer, { url: context.parameters.tiffurl.raw || "" }
-        ));
+        // this.root.render(React.createElement(
+        //     MYTIFViewer, {
+        //         url: context.parameters.tiffurl.raw || "",
+        //         base64: context.parameters.base64.raw || ""
+        // }
+        // ));
+
+        //  this.root.render(React.createElement(
+        //     CanvasXY, {
+        //         url: context.parameters.tiffurl.raw || "",
+        //         base64: context.parameters.base64.raw || ""
+        // }
+        // ));
 
         //  this.root.render( 
         //     <MYTIFViewer/>  
         // );
 
-        // root.render(React.createElement(
+        // this.root.render(React.createElement(
         //    ImageViewer,
-        //    {tiffurl:this.tiffurl }
+        //    {url:context.parameters.tiffurl.raw || "", base64: context.parameters.base64.raw || "" }
         // ));
+
+        if (filetype == "tiff") {
+            this.root.render(React.createElement(
+                MYTIFViewer, {
+                url: context.parameters.tiffurl.raw || "",
+                base64: context.parameters.base64.raw || ""
+            }
+            ));
+        } else {
+            this.root.render(React.createElement(
+                ImageViewer2,
+                { url: context.parameters.tiffurl.raw || "", base64: context.parameters.base64.raw || "" }
+            ));
+        }
+
     }
 
     /**
