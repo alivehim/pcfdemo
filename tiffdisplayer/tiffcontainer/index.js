@@ -106,7 +106,7 @@ export const TIFFViewer = function TiffFileViewer(
   /** 记录鼠标按下的坐标 */
   const [mouseDowmPos, setMouseDowmPos] = useState({ x: 0, y: 0 });
 
-    const [offsetDis, setOffsetDis] = useState({left: 0, top: 0});
+  const [offsetDis, setOffsetDis] = useState({ left: 0, top: 0 });
 
   // console.log("x" + tiff)
   // states
@@ -114,61 +114,85 @@ export const TIFFViewer = function TiffFileViewer(
   const [, setTiffs] = React.useState([])
   const [pages, setPages] = React.useState([])
   const [page, setPage] = React.useState(0)
- const [pageCount, setPageCount] = React.useState(0)
+  const [pageCount, setPageCount] = React.useState(0)
 
   // refs
   const canvasRef = React.useRef(null)
-    const canvasXRef = React.useRef(null)
+  const canvasXRef = React.useRef(null)
   const btnPrintRef = React.useRef(null)
   const paginateLTRRef = React.useRef(null)
   const paginateBottomRef = React.useRef(null)
 
-  const [buffer,setBuffer] = useState([])
+  const [buffer, setBuffer] = useState([])
+
+  const [imgdatas, setImageData] = useState([])
 
   if (tiff != _tiff) {
     setTiff(tiff);
   }
 
 
-  
- const loadImage = (buffer1)=>{
+  const loadimagedata = (buffer1) => {
 
-var ifds = UTIF.decode(buffer1)
-   var ifd = ifds[page]
+    var ifds = UTIF.decode(buffer1)
+
+    const _imgdatas = ifds.map(function (ifd, index) {
       UTIF.decodeImage(buffer1, ifd)
       var rgba = UTIF.toRGBA8(ifd)
-      var canvas =  canvasXRef.current
-
+      var canvas = document.createElement('canvas')
       canvas.width = ifd.width
       canvas.height = ifd.height
-
-
-      console.log(`write width ${ifds[0].width} and ${ifds[0].height} `)
-      setCanvasWidth( ifd.width)
-      setCanvasHeight (ifd.height)
-
-    
-
-
       var ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, ifd.width, ifd.height);
       var img = ctx.createImageData(ifd.width, ifd.height)
       img.data.set(rgba)
-      ctx.putImageData(img, 0, 0)
+      return img
+    })
 
-      // setPages([...pages, 1]);
-      // setPages([...pages, 1]);
+    setImageData(_imgdatas)
 
-      setPageCount(ifds.length)
- }
+    setPageCount(ifds.length)
+    return _imgdatas;
+  }
+
+  const readerImage = ( _imgdatas) => {
+
+  
+
+    if(!_imgdatas)
+      return ;
+    
+ 
+    var canvas = canvasXRef.current
+
+    canvas.width = _imgdatas[page].width
+    canvas.height = _imgdatas[page].height
+
+
+    // console.log(`write width ${ifds[0].width} and ${ifds[0].height} `)
+    setCanvasWidth(_imgdatas[page].width)
+    setCanvasHeight(_imgdatas[page].height)
+
+
+
+
+    var ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0,  _imgdatas[page].width , _imgdatas[page].height);
+    // var img = ctx.createImageData( _imgdatas[page].width,  _imgdatas[page].height)
+   
+    ctx.putImageData(_imgdatas[page], 0, 0)
+
+    // setPages([...pages, 1]);
+    // setPages([...pages, 1]);
+
+  }
 
   function imgLoaded(buffer1) {
 
     setBuffer(buffer1)
-loadImage(buffer1);
+    return loadimagedata(buffer1);
 
     // var ifds = UTIF.decode(buffer)
- 
+
     // const _tiffs = ifds.map(function (ifd, index) {
 
 
@@ -266,7 +290,7 @@ loadImage(buffer1);
     // //     const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
     // //     // 平移图片
     // //     const ctx = canvas.getContext('2d');
-       
+
     // //      ctx.clearRect(0, 0, ifd.width, ifd.height);
 
     // //     // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
@@ -278,9 +302,9 @@ loadImage(buffer1);
 
     // //       ctx.putImageData(data, offsetX, offsetY )
 
-      
+
     // //     })
- 
+
 
     // //     // 更新按下的坐标
     // //     setMouseDowmPos({
@@ -368,12 +392,15 @@ loadImage(buffer1);
         const response = await axios.get(tiffUrl, {
           responseType: 'arraybuffer'
         })
-        imgLoaded(response.data)
+         var img = imgLoaded(response.data)
+        readerImage(img)
       } else {
         const b = Uint8Array.from(atob(tiffUrl), (c) => c.charCodeAt(0));
         // console.log(tiffBase64);
         // const b = base642UINT8Array(tiffUrl);
-        imgLoaded(b)
+      
+       var img1 =  imgLoaded(b)
+        readerImage(img1)
       }
     }
 
@@ -468,11 +495,11 @@ loadImage(buffer1);
     //   canvasRef.current.appendChild(pages[page])
     // }
 
-    if(buffer && buffer.length!=0){
+    if (buffer && buffer.length != 0) {
 
       console.log(page)
       console.log('page changed')
-       loadImage(buffer)
+      readerImage(imgdatas)
     }
   }, [page, pages])
 
@@ -493,138 +520,139 @@ loadImage(buffer1);
   //   }
   // }))
 
-  const handleWheelImage = (event)=>{
-        console.log(event)
-        event.stopPropagation();
-
-            event.preventDefault();
-
-      var canvas =  canvasXRef.current
- 
-
-  
-        const ctx = canvas.getContext('2d');
-        // 向上为负，向下为正
-        const bigger = event.deltaY > 0 ? -1 : 1;
-        // 放大比例
-        const enlargeRate = 1.2;
-        // 缩小比例
-        const shrinkRate = 0.8;
-
-        const rate = bigger > 0 ? enlargeRate : shrinkRate;
-
-        const width = canvasWidth * rate;
-        const height = canvasHeight * rate;
-        console.log(width)
-        console.log(height)
-        setCanvasWidth( width)
-        setCanvasHeight( height)
-
-        var ifds = UTIF.decode(buffer)
-   var ifd = ifds[page]
-      UTIF.decodeImage(buffer, ifd)
-      var rgba = UTIF.toRGBA8(ifd)
-
-        ctx.clearRect(0, 0, ifd.width, ifd.height);
-
-        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
-        var img = ctx.createImageData(ifd.width, ifd.height)
-        img.data.set(rgba)
-        // const { height: initHeight, naturalHeight, naturalWidth } = img;
-
-        resizeImageData(img, width, height).then(data => {
-
-          // ctx.putImageData(data, 0, 0)
-          ctx.putImageData(data, offsetDis.left, offsetDis.top)
-
-          console.log(`set width:${width}`)
-          // canvasWidth = width
-          // canvasHeight = height
-        })
-
-        return false
-
-  }
-
-  const handleMouseDown  = (event)=>{
+  const handleWheelImage = (event) => {
+    console.log(event)
     event.stopPropagation();
-        event.preventDefault(); // 阻止浏览器默认行为，拖动会打开图片
-        const { clientX, clientY } = event;
-        // 相对于canvas坐标
-        const canvas = event.target;
-        const pos = windowToCanvas(canvas, clientX, clientY);
-        canvas.style.cursor = 'move';
-        setMouseDowmFlag(true); // 控制只有在鼠标按下后才会执行mousemove
+    event.nativeEvent.stopImmediatePropagation()
+    // event.preventDefault();
 
-        setMouseDowmPos({
-          x: pos.x,
-          y: pos.y,
-        });
+    var canvas = canvasXRef.current
 
- 
-  }
 
-  const handleMouseMove = (event)=>{
 
-        event.stopPropagation();
-        event.preventDefault();
+    const ctx = canvas.getContext('2d');
+    // 向上为负，向下为正
+    const bigger = event.deltaY > 0 ? -1 : 1;
+    // 放大比例
+    const enlargeRate = 1.2;
+    // 缩小比例
+    const shrinkRate = 0.8;
 
-         var ifds = UTIF.decode(buffer)
-   var ifd = ifds[page]
-      UTIF.decodeImage(buffer, ifd)
-      var rgba = UTIF.toRGBA8(ifd)
+    const rate = bigger > 0 ? enlargeRate : shrinkRate;
 
-        if (!mouseDowmFlag) return;
-        const { clientX, clientY } = event;
-        const canvas = event.target
-        // 相对于canvas坐标
-        const pos = windowToCanvas(canvas, clientX, clientY)
-        // 偏移量
-        const diffX = pos.x - mouseDowmPos.x;
-        const diffY = pos.y - mouseDowmPos.y;
-        if ((diffX === 0 && diffY === 0)) return;
-        // 坐标定位 = 上次定位 + 偏移量
-        const offsetX = parseInt(`${diffX + offsetDis.left}`, 10);
-        const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
-        // 平移图片
-        const ctx = canvas.getContext('2d');
-       
-         ctx.clearRect(0, 0, ifd.width, ifd.height);
+    const width = canvasWidth * rate;
+    const height = canvasHeight * rate;
+    console.log(width)
+    console.log(height)
+    setCanvasWidth(width)
+    setCanvasHeight(height)
 
-        // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
-        var img = ctx.createImageData(ifd.width, ifd.height)
-        img.data.set(rgba)
-        // const { height: initHeight, naturalHeight, naturalWidth } = img;
+    // var ifds = UTIF.decode(buffer)
+    // var ifd = ifds[page]
+    // UTIF.decodeImage(buffer, ifd)
+    // var rgba = UTIF.toRGBA8(ifd)
 
-        resizeImageData(img, canvasWidth, canvasHeight).then(data => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    // ctx.clearRect(0, 0, ifd.width, ifd.height);
 
-          ctx.putImageData(data, offsetX, offsetY )
+    // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+    // var img = ctx.createImageData(ifd.width, ifd.height)
+    // img.data.set(rgba)
+    // const { height: initHeight, naturalHeight, naturalWidth } = img;
 
-      
-        })
- 
+    resizeImageData(imgdatas[page], width, height).then(data => {
 
-        // 更新按下的坐标
-        setMouseDowmPos({
-          x: pos.x,
-          y: pos.y,
-        });
+      // ctx.putImageData(data, 0, 0)
+      ctx.putImageData(data, offsetDis.left, offsetDis.top)
 
-     
+      console.log(`set width:${width}`)
+      // canvasWidth = width
+      // canvasHeight = height
+    })
 
-        // 更新上次坐标
-        setOffsetDis({
-          left: offsetX,
-          top: offsetY,
-        })
- 
+    return false
 
   }
 
-  const handleMouseUp = (event)=>{
-     event.stopPropagation();
+  const handleMouseDown = (event) => {
+    event.stopPropagation();
+    event.preventDefault(); // 阻止浏览器默认行为，拖动会打开图片
+    const { clientX, clientY } = event;
+    // 相对于canvas坐标
+    const canvas = event.target;
+    const pos = windowToCanvas(canvas, clientX, clientY);
+    canvas.style.cursor = 'move';
+    setMouseDowmFlag(true); // 控制只有在鼠标按下后才会执行mousemove
+
+    setMouseDowmPos({
+      x: pos.x,
+      y: pos.y,
+    });
+
+
+  }
+
+  const handleMouseMove = (event) => {
+
+    event.stopPropagation();
     event.preventDefault();
-    const canvas = event.target  ;
+
+    // var ifds = UTIF.decode(buffer)
+    // var ifd = ifds[page]
+    // UTIF.decodeImage(buffer, ifd)
+    // var rgba = UTIF.toRGBA8(ifd)
+
+    if (!mouseDowmFlag) return;
+    const { clientX, clientY } = event;
+    const canvas = event.target
+    // 相对于canvas坐标
+    const pos = windowToCanvas(canvas, clientX, clientY)
+    // 偏移量
+    const diffX = pos.x - mouseDowmPos.x;
+    const diffY = pos.y - mouseDowmPos.y;
+    if ((diffX === 0 && diffY === 0)) return;
+    // 坐标定位 = 上次定位 + 偏移量
+    const offsetX = parseInt(`${diffX + offsetDis.left}`, 10);
+    const offsetY = parseInt(`${diffY + offsetDis.top}`, 10);
+    // 平移图片
+    const ctx = canvas.getContext('2d');
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ctx.drawImage(imgElement, offsetDis.left, offsetDis.top, width, height);
+    // var img = ctx.createImageData(ifd.width, ifd.height)
+    // img.data.set(rgba)
+    // const { height: initHeight, naturalHeight, naturalWidth } = img;
+
+    resizeImageData(imgdatas[page], canvasWidth, canvasHeight).then(data => {
+
+      ctx.putImageData(data, offsetX, offsetY)
+
+
+    })
+
+
+    // 更新按下的坐标
+    setMouseDowmPos({
+      x: pos.x,
+      y: pos.y,
+    });
+
+
+
+    // 更新上次坐标
+    setOffsetDis({
+      left: offsetX,
+      top: offsetY,
+    })
+
+
+  }
+
+  const handleMouseUp = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    const canvas = event.target;
     canvas.style.cursor = 'default';
     setMouseDowmFlag(false);
   }
@@ -662,18 +690,18 @@ loadImage(buffer1);
           className={styles.inner}
           ref={canvasRef}
         >
-           <canvas 
-        ref={canvasXRef} 
- 
-        onWheel={handleWheelImage}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-      ></canvas>
+          <canvas
+            ref={canvasXRef}
 
-          </div>
+            onWheel={handleWheelImage}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+          ></canvas>
 
-        {paginate === 'ltr' &&  pageCount > 1 && (
+        </div>
+
+        {paginate === 'ltr' && pageCount > 1 && (
           <div className={styles.absolute} id='absolute' ref={paginateLTRRef}>
             <button
               style={{ backgroundColor: buttonColor }}
@@ -697,7 +725,7 @@ loadImage(buffer1);
         )}
       </div>
 
-      {paginate === 'bottom' &&  pageCount > 1 && (
+      {paginate === 'bottom' && pageCount > 1 && (
         <div id='footer' ref={paginateBottomRef}>
           <button
             style={{ backgroundColor: buttonColor }}
