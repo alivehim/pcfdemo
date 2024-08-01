@@ -1,1 +1,13 @@
-LW4gJzQ1MzgyMTY0Onh4ODgzNDIwJCRydHl1aScgDQo=
+<AppModuleRoleMaps>
+        <Role id="{236750cd-45ae-4939-ab12-b24b920ced93}" />
+        <Role id="{494d392f-d3f4-42ba-af49-30c6f41e6093}" />
+        <Role id="{0e9f7186-cb58-ed11-9561-002248593569}" />
+        <Role id="{b366f392-ef7c-ed11-81ac-000d3a07ca3c}" />
+        <Role id="{627090ff-40a3-4053-8790-584edc5be201}" />
+        <Role id="{119f245c-3cc8-4b62-b31c-d1a046ced15d}" />
+      </AppModuleRoleMaps>
+      <EventHandlers>
+        <EventHandler eventname="onload" functionname="SSMS.helloSSMS" libraryname="/clp_ssms_onload.js" parameters="" enable="true" />
+        <EventHandler eventname="onload" functionname="ShareSdk.import" libraryname="/clp_ssms_sharesdk.js" parameters="" enable="true" />
+        <EventHandler eventname="onload" functionname="window.parent.$" libraryname="/clp_excel-lib-1.1.1.js" parameters="" enable="true" />
+      </EventHandlers>

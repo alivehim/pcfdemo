@@ -1,0 +1,109 @@
+﻿<UserControl x:Class="UtilityTools.Modules.Canvas.Views.DictionaryWidgetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"  
+             xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+             xmlns:controls="clr-namespace:UtilityTools.Controls;assembly=UtilityTools.Controls"
+             xmlns:converter="clr-namespace:UtilityTools.Controls.Converters;assembly=UtilityTools.Controls"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <UserControl.Resources>
+        <converter:TextToVisiablilityConverter x:Key="TextToVisiablilityConverter"/>
+        <converter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converter:NBooleanToVisibilityConverter x:Key="NBooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+    
+    <DockPanel >
+        <Border BorderBrush="Black" BorderThickness="1,1,1,1">
+
+            <Grid>
+                <!--<Grid Grid.ColumnSpan="3" >
+                    <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1">
+                        <wpf:ChromiumWebBrowser x:Name="Browser"
+                                    Address="http://www.baidu.com">
+                            --><!--<behaviors:Interaction.Behaviors>
+                                <behaviours:HoverLinkBehaviour x:Name="HoverLinkBehaviour"/>
+                            </behaviors:Interaction.Behaviors>--><!--
+                        </wpf:ChromiumWebBrowser>
+                    </Border>
+                </Grid>-->
+
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="5*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+
+                    <Grid  Margin="10,0,0,10" Background="Transparent">
+                        <TextBlock Margin="5,2" Text="Vocabulary..." FontSize="50"
+                   Foreground="LightSteelBlue" Visibility="{Binding ElementName=vocabulary, Path=Text, Converter={StaticResource TextToVisiablilityConverter}}"  IsHitTestVisible="False"/>
+
+                        <TextBox Name="vocabulary" TextWrapping="Wrap" AcceptsReturn="True" BorderBrush="Transparent" 
+                     HorizontalScrollBarVisibility="Visible" Background="Transparent" 
+                     Text="{Binding Vocabulary,Mode=TwoWay}" FontSize="30" FontWeight="Bold">
+                            <TextBox.Resources>
+                                <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.3" Stretch="None" AlignmentX="Left">
+                                    <VisualBrush.Visual>
+                                        <TextBlock FontStyle="Italic" Text="请输入用户名"/>
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
+                            </TextBox.Resources>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="{x:Null}">
+                                            <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button Margin="0,10,0,10" Content="Basic Concept" HorizontalAlignment="Center" Command="{Binding GetBasicConceptCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Root" HorizontalAlignment="Center" Command="{Binding GetWordRootCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Variants" HorizontalAlignment="Center" Command="{Binding GetVariantsCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Phrase" HorizontalAlignment="Center" Command="{Binding GetPhraseCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Example" HorizontalAlignment="Center" Command="{Binding GetExampleCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Baidu" HorizontalAlignment="Center" Command="{Binding OpenBaiduCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                            <Button Margin="0,10,0,10" Content="Bing" HorizontalAlignment="Center" Command="{Binding OpenBingCommand}"
+                    VerticalAlignment="Center" HorizontalContentAlignment="Center"  Width="80" Height="30" 
+                    VerticalContentAlignment="Center" ></Button>
+
+                        </StackPanel>
+
+                    </Grid>
+                    <Grid Grid.Column="2"  Margin="0,0,10,10" >
+                        <controls:HtmlRenderControl  x:Name="Header" Foreground="#E0FFFF"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+           
+        </Border>
+
+    </DockPanel>
+</UserControl>

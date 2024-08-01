@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\Debug\Modules\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Images\clear.png" />
+    <None Remove="Resources\Images\setting.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Core" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Interfaces" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\UtilityTools.Controls\UtilityTools.Controls.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\UtilityTools.Core\UtilityTools.Core.csproj" />
+    <ProjectReference Include="..\..\Services\UtilityTools.Services.Interfaces\UtilityTools.Services.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\clear.png" />
+    <Resource Include="Resources\Images\setting.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Themes\" />
+  </ItemGroup>
+
+</Project>

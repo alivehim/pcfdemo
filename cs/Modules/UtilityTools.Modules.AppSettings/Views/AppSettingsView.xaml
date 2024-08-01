@@ -1,0 +1,849 @@
+﻿<UserControl x:Class="UtilityTools.Modules.AppSettings.Views.AppSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UtilityTools.Modules.AppSettings.Views"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:ac="clr-namespace:UtilityTools.Controls.Loading;assembly=UtilityTools.Controls"
+             xmlns:errorList="clr-namespace:UtilityTools.Controls.Panels;assembly=UtilityTools.Controls"
+             xmlns:converter="clr-namespace:UtilityTools.Controls.Converters;assembly=UtilityTools.Controls"
+             xmlns:controls="clr-namespace:UtilityTools.Controls;assembly=UtilityTools.Controls"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" LostFocus="appSettingsUserControl_LostFocus"
+             Name="appSettingsUserControl"
+             d:DesignHeight="850" d:DesignWidth="1800">
+    <Control.Resources>
+        <sys:String x:Key="ModuelName">AppSettings</sys:String>
+        <sys:String x:Key="MenuIcon">Resources\Images\setting.png</sys:String>
+        <sys:String x:Key="IsVisiable">true</sys:String>
+
+        <converter:RadioBoolToIntConverter x:Key="radioBoolToIntConverter" />
+        <converter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+
+        <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        </Style>
+        <Style x:Key="ItemTitleStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyle}">
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+
+        <Style x:Key="ItemSubTitleStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource ItemTitleStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ToggleButton}, Path=IsChecked}" Value="True">
+                    <Setter Property="Text" Value="On: Banners, Sound"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ToggleButton}, Path=IsChecked}" Value="False">
+                    <Setter Property="Text" Value="Off"/>
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <SolidColorBrush x:Key="Hover.Enter.Brush" Color="#FFF2F2F2" />
+        <SolidColorBrush x:Key="Hover.Exit.Brush" Color="#01FFFFFF" />
+
+        <Storyboard x:Key="Hover.Enter.Storyboard">
+            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background">
+                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{StaticResource Hover.Enter.Brush}" />
+            </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="Hover.Exit.Storyboard">
+            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background">
+                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{StaticResource Hover.Exit.Brush}" />
+            </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Style x:Key="HoverBorder" TargetType="Border">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0 4"/>
+            <Setter Property="Padding" Value="10 2"/>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Mouse.MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource Hover.Enter.Storyboard}" />
+                </EventTrigger>
+                <EventTrigger RoutedEvent="Mouse.MouseLeave">
+                    <BeginStoryboard Storyboard="{StaticResource Hover.Exit.Storyboard}" />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="IconBorder" TargetType="Border">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="0 0 10 0"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Background" Value="{StaticResource RadioButton.Checked.Background}"/>
+        </Style>
+
+    </Control.Resources>
+    <DockPanel x:Name="xpanel">
+
+        <ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="150" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="15,0,15,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <!-- Row 2 -->
+                    <!-- Row 4-->
+                    <!--<Button Content="Save" Command="{Binding SaveCommand}"  Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" />-->
+
+                    <!--<ToggleButton x:Name="TogglePopupButton"  Command="{Binding OpenMediaSymbol}" Grid.Column="6" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Margin="5,0,0,0" >
+                    <StackPanel>
+                       
+                       
+                    </StackPanel>
+                </ToggleButton>-->
+
+                    <StackPanel Grid.Column="4" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Height="30" VerticalAlignment="Bottom" 
+                                Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ToggleButton Name="PCheckBox" Height="30" Content="Popup Window" />
+                        <Button HorizontalAlignment="Left" Width="129" Margin="10,10,0,0">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="theTransform" Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Popup IsOpen="{Binding ElementName=PCheckBox,Path=IsChecked}" 
+                           PlacementTarget="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AppSettingsView}}"
+                           Width="800" Height="600"
+                           Placement="Center"
+                           StaysOpen="False"
+                           AllowsTransparency="True" PopupAnimation="Slide" 
+                           >
+
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"  
+BorderBrush="Black"
+BorderThickness="1"
+Margin="5">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+                                    <WrapPanel Grid.Row="0"
+    Height="16"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Top"
+    Orientation="Horizontal" >
+                                        <Button>
+                                            <Path
+        Width="12"
+        Height="12"
+        Data="m12.65194,6.64088l-2.65193,2.65194l-2.65195,-2.65194c-0.19527,-0.19528 -0.51189,-0.19528 -0.70718,0c-0.19529,0.19528 -0.19528,0.5119 0,0.70718l2.65194,2.65195l-2.65194,2.65193c-0.19528,0.19528 -0.19528,0.51191 0,0.70719c0.19528,0.19528 0.5119,0.19528 0.70718,0l2.65195,-2.65194l2.65193,2.65194c0.19528,0.19528 0.5119,0.19528 0.70719,0c0.19528,-0.19528 0.19528,-0.51191 0,-0.70719l-2.65194,-2.65193l2.65194,-2.65195c0.19528,-0.19527 0.19528,-0.51189 0,-0.70718c-0.19528,-0.19528 -0.5119,-0.19528 -0.70719,0z"
+        Fill="Black"
+        Stretch="Fill"
+        UseLayoutRounding="True" />
+                                        </Button>
+
+                                    </WrapPanel>
+                                    <local:MediaSymbolView  Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Border>
+                            <!--<Canvas Width="800" Height="600" Background="{DynamicResource WindowBackgroundBrush}"  Margin="150">
+                                <Canvas.RenderTransform>
+                                    <RotateTransform x:Name="theTransform" />
+                                </Canvas.RenderTransform>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+
+                                    <local:MediaSymbolView  Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Canvas>-->
+                        </Popup>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="6" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Height="30" VerticalAlignment="Bottom" Margin="5,0,0,0"
+                                Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ToggleButton Name="PCheckBoxHub" Height="30" Content="Popup Hub" />
+                        <Button HorizontalAlignment="Left" Width="129" Margin="10,10,0,0">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="theTransform" Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Popup IsOpen="{Binding ElementName=PCheckBoxHub,Path=IsChecked}" 
+                           PlacementTarget="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AppSettingsView}}"
+                           Width="800" Height="600"
+                           Placement="Center"
+                           StaysOpen="False"
+                           AllowsTransparency="True" PopupAnimation="Slide" 
+                           >
+
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"  
+BorderBrush="Black"
+BorderThickness="1"
+Margin="5">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+                                    <WrapPanel Grid.Row="0"
+    Height="16"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Top"
+    Orientation="Horizontal" >
+                                        <Button>
+                                            <Path
+        Width="12"
+        Height="12"
+        Data="m12.65194,6.64088l-2.65193,2.65194l-2.65195,-2.65194c-0.19527,-0.19528 -0.51189,-0.19528 -0.70718,0c-0.19529,0.19528 -0.19528,0.5119 0,0.70718l2.65194,2.65195l-2.65194,2.65193c-0.19528,0.19528 -0.19528,0.51191 0,0.70719c0.19528,0.19528 0.5119,0.19528 0.70718,0l2.65195,-2.65194l2.65193,2.65194c0.19528,0.19528 0.5119,0.19528 0.70719,0c0.19528,-0.19528 0.19528,-0.51191 0,-0.70719l-2.65194,-2.65193l2.65194,-2.65195c0.19528,-0.19527 0.19528,-0.51189 0,-0.70718c-0.19528,-0.19528 -0.5119,-0.19528 -0.70719,0z"
+        Fill="Black"
+        Stretch="Fill"
+        UseLayoutRounding="True" />
+                                        </Button>
+
+                                    </WrapPanel>
+                                    <local:MediaHubConfigrationView  Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
+
+                    <!--keyword setting-->
+                    <StackPanel Grid.Column="13" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Height="30" VerticalAlignment="Bottom"
+                                Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ToggleButton Name="KeywordCheckBox" Height="30" Content="Popup User" />
+                        <Button HorizontalAlignment="Left" Width="129" Margin="10,10,0,0">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="theUserTransform" Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Popup IsOpen="{Binding ElementName=KeywordCheckBox,Path=IsChecked}" 
+                           PlacementTarget="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+
+                           Placement="Center"
+                           StaysOpen="False"
+                           AllowsTransparency="True" PopupAnimation="Slide" 
+                           >
+
+                            <Canvas Width="800" Height="600" Background="{DynamicResource WindowBackgroundBrush}"  Margin="150">
+                                <Canvas.RenderTransform>
+                                    <RotateTransform x:Name="theUserTransform" />
+                                </Canvas.RenderTransform>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+
+                                    <local:UserView Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Canvas>
+                        </Popup>
+                    </StackPanel>
+
+                    <!--user setting-->
+                    <StackPanel Grid.Column="15" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Height="30" VerticalAlignment="Bottom" Margin="5,0,0,0"
+                                Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ToggleButton Name="UserPCheckBox" Height="30" Content="Popup Keyword" />
+                        <Button HorizontalAlignment="Left" Width="129" Margin="10,10,0,0">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="theUserTransform" Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Popup IsOpen="{Binding ElementName=UserPCheckBox,Path=IsChecked}" 
+                           PlacementTarget="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AppSettingsView}}"
+                           Width="800" Height="600"
+                           Placement="Center"
+                           StaysOpen="False"
+                           AllowsTransparency="True" PopupAnimation="Slide" 
+                           >
+
+                            <Border Background="{DynamicResource WindowBackgroundBrush}"  
+BorderBrush="Black"
+BorderThickness="1"
+Margin="5">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+                                    <WrapPanel Grid.Row="0"
+    Height="16"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Top"
+    Orientation="Horizontal" >
+                                        <Button>
+                                            <Path
+        Width="12"
+        Height="12"
+        Data="m12.65194,6.64088l-2.65193,2.65194l-2.65195,-2.65194c-0.19527,-0.19528 -0.51189,-0.19528 -0.70718,0c-0.19529,0.19528 -0.19528,0.5119 0,0.70718l2.65194,2.65195l-2.65194,2.65193c-0.19528,0.19528 -0.19528,0.51191 0,0.70719c0.19528,0.19528 0.5119,0.19528 0.70718,0l2.65195,-2.65194l2.65193,2.65194c0.19528,0.19528 0.5119,0.19528 0.70719,0c0.19528,-0.19528 0.19528,-0.51191 0,-0.70719l-2.65194,-2.65193l2.65194,-2.65195c0.19528,-0.19527 0.19528,-0.51189 0,-0.70718c-0.19528,-0.19528 -0.5119,-0.19528 -0.70719,0z"
+        Fill="Black"
+        Stretch="Fill"
+        UseLayoutRounding="True" />
+                                        </Button>
+
+                                    </WrapPanel>
+                                    <local:KeywordManageView Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Border>
+                            <!--<Canvas Width="800" Height="600" Background="{DynamicResource WindowBackgroundBrush}"  Margin="150">
+                                <Canvas.RenderTransform>
+                                    <RotateTransform x:Name="theKeywordTransform" />
+                                </Canvas.RenderTransform>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>p
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+
+                                    <local:KeywordManageView Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Canvas>-->
+                        </Popup>
+                    </StackPanel>
+
+                    <Button  Grid.Column="10" Grid.ColumnSpan="1" Grid.Row="4"  Grid.RowSpan="1" Height="30" Command="{Binding ClearCacheCommand}"
+                             Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" >
+                        Clear
+                    </Button>
+
+                    <Button  Grid.Column="11" Grid.ColumnSpan="1" Grid.Row="4" Margin="5,0" Grid.RowSpan="1" Height="30" Command="{Binding OpenDataViewCommand}"
+           Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" >
+                        Data
+                    </Button>
+
+                    <Button  Grid.Column="17" Grid.ColumnSpan="2" Grid.Row="4" Margin="5,0" Grid.RowSpan="1" Height="30" Command="{Binding OpenTempFolderCommand}"
+Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" >
+                        TempData
+                    </Button>
+
+                    <!--<StackPanel Grid.Column="12" Grid.ColumnSpan="2" Grid.Row="4"  Grid.RowSpan="1" Height="30" VerticalAlignment="Bottom" >
+                        <ToggleButton Name="keywordPCheckBox" Height="30" Content="Popup Keyword" />
+                        <Button HorizontalAlignment="Left" Width="129" Margin="10,10,0,0">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="theUserTransform" Storyboard.TargetProperty="(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Popup IsOpen="{Binding ElementName=keywordPCheckBox,Path=IsChecked}" 
+                           PlacementTarget="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
+
+                           Placement="Center"
+                           StaysOpen="False"
+                           AllowsTransparency="True" PopupAnimation="Slide" 
+                           >
+
+                            <Canvas Width="800" Height="600" Background="{DynamicResource WindowBackgroundBrush}"  Margin="150">
+                                <Canvas.RenderTransform>
+                                    <RotateTransform x:Name="theNovelKeywordTransform" />
+                                </Canvas.RenderTransform>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="18"></RowDefinition>
+                                        <RowDefinition Height="*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+
+
+                                    <local:KeywordManageView Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" />
+                                </Grid>
+                            </Canvas>
+                        </Popup>
+                    </StackPanel>-->
+
+                </Grid>
+
+                <Grid Grid.Row="1">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!--<Grid Margin="30 10 0 0" HorizontalAlignment="Left">
+                    <ToggleButton x:Name="ToggleSwitch1" FontFamily="Sergio UI" FontSize="16"
+                          Style="{DynamicResource ToggleSwitchTopStyle}"
+                          Content="Show Notification" 
+                          IsChecked="{Binding DisplayNotification}"/>
+
+                    <TextBlock Margin="52 0 0 0" VerticalAlignment="Bottom" FontFamily="Sergio UI" FontSize="16">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}">
+                                <Setter Property="Text" Value="Off" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=ToggleSwitch1, Path=IsChecked}" Value="True">
+                                        <Setter Property="Text" Value="On" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=ToggleSwitch1, Path=IsEnabled}" Value="false">
+                                        <Setter Property="Opacity" Value="0.2" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>-->
+
+                        <StackPanel  Margin="30 10 0 0" Grid.Row="1" >
+                            <Grid  HorizontalAlignment="Left"  >
+                                <ToggleButton x:Name="ToggleSwitch2" FontFamily="Sergio UI" FontSize="16"
+   Style="{DynamicResource ToggleSwitchTopStyle}"
+   Content="Show Module" 
+   IsChecked="{Binding ShowMediaGetModule}" 
+   />
+                                <TextBlock Margin="52 0 0 0" VerticalAlignment="Bottom" FontFamily="Sergio UI" FontSize="16">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}">
+                                            <Setter Property="Text" Value="Off" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=ToggleSwitch2, Path=IsChecked}" Value="True">
+                                                    <Setter Property="Text" Value="On" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=ToggleSwitch2, Path=IsEnabled}" Value="false">
+                                                    <Setter Property="Opacity" Value="0.2" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+
+                            </Grid>
+
+                            <Grid  HorizontalAlignment="Left" Margin="0,20,0,0" >
+                                <ToggleButton x:Name="toggleIsSearchFolder" FontFamily="Sergio UI" FontSize="16"
+   Style="{DynamicResource ToggleSwitchTopStyle}"
+   Content="Delete Temp Folder" 
+   IsChecked="{Binding DeleteTempFolder}" 
+   />
+                                <TextBlock Margin="52 0 0 0" VerticalAlignment="Bottom" FontFamily="Sergio UI" FontSize="16">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}">
+                                            <Setter Property="Text" Value="Off" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=toggleIsSearchFolder, Path=IsChecked}" Value="True">
+                                                    <Setter Property="Text" Value="On" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=toggleIsSearchFolder, Path=IsEnabled}" Value="false">
+                                                    <Setter Property="Opacity" Value="0.2" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+
+                            </Grid>
+
+                            <Grid  HorizontalAlignment="Left"  Margin="0,20,0,0" >
+                                <ToggleButton x:Name="toggleUsingVLC" FontFamily="Sergio UI" FontSize="16"
+Style="{DynamicResource ToggleSwitchTopStyle}"
+Content="Using VLC Open Resource" 
+IsChecked="{Binding IsUsingVLC}" 
+/>
+                                <TextBlock Margin="52 0 0 0" VerticalAlignment="Bottom" FontFamily="Sergio UI" FontSize="16">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}">
+                                            <Setter Property="Text" Value="Off" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=toggleUsingVLC, Path=IsChecked}" Value="True">
+                                                    <Setter Property="Text" Value="On" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=toggleUsingVLC, Path=IsEnabled}" Value="false">
+                                                    <Setter Property="Opacity" Value="0.2" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+
+                            </Grid>
+
+                            <Grid  HorizontalAlignment="Left"  Margin="0,20,0,0" >
+                                <ToggleButton x:Name="toggleHoverImage" FontFamily="Sergio UI" FontSize="16"
+Style="{DynamicResource ToggleSwitchTopStyle}"
+Content="Display image when hovering" 
+IsChecked="{Binding DisplayImageWhenHovering}" 
+/>
+                                <TextBlock Margin="52 0 0 0" VerticalAlignment="Bottom" FontFamily="Sergio UI" FontSize="16">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource TextBlockStyle}">
+                                            <Setter Property="Text" Value="Off" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=toggleHoverImage, Path=IsChecked}" Value="True">
+                                                    <Setter Property="Text" Value="On" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=toggleHoverImage, Path=IsEnabled}" Value="false">
+                                                    <Setter Property="Opacity" Value="0.2" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal"  Margin="0,20,0,0">
+                                <Label Height="30"    VerticalAlignment="Center">Engine:</Label>
+                                <Grid  VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*"></ColumnDefinition>
+                                        <ColumnDefinition Width="6*"></ColumnDefinition>
+                                        <ColumnDefinition Width="6*"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+
+                                    <RadioButton x:Name = "rb1" Content = "Local" HorizontalAlignment = "Left"   Margin="10,0,10,0"
+VerticalAlignment = "Top" IsChecked="{Binding Path=DownloadProvider, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=1}" 
+GroupName = "DownloadProvider" Width = "69" />
+
+                                    <RadioButton x:Name = "rb2" Grid.Column="1" Content = "VLC" HorizontalAlignment = "Left" Margin="10,0,0,0"
+VerticalAlignment = "Top"  IsChecked="{Binding Path=DownloadProvider, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=2}"
+GroupName = "DownloadProvider" Width = "69" />
+
+                                    <RadioButton x:Name = "rb3" Grid.Column="2" Content = "Fake" HorizontalAlignment = "Left" Margin="10,0,0,0"
+VerticalAlignment = "Top"  IsChecked="{Binding Path=DownloadProvider, Converter={StaticResource radioBoolToIntConverter}, ConverterParameter=3}"
+GroupName = "DownloadProvider" Width = "69" />
+                                </Grid>
+                            </StackPanel>
+
+                        </StackPanel>
+
+
+
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="3" >
+                            <StackPanel>
+                                <Label Content="Authorizetion Token" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="30" TextWrapping="Wrap" Text="{Binding D365AccessToken}" Width="500" HorizontalAlignment="Stretch" Name="txtToken" VerticalAlignment="Top" />
+
+
+
+                                <Label Content="Resource Url" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="30" TextWrapping="Wrap" Text="{Binding D365ResourceUrl}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                                <!--<Label Content="SolutionID" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="65" TextWrapping="Wrap" Text="{Binding D365SolutionId}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />-->
+
+                                <Label Content="Environment Id" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="30" TextWrapping="Wrap" Text="{Binding EnvironmentId}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                                <Label Content="UserName" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="30" TextWrapping="Wrap" Text="{Binding D365UsrName}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                                <Label Content="UserPassword" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="30"  TextWrapping="Wrap" Text="{Binding D365Password}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                                <Label Content="GraphToken" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="80"  TextWrapping="Wrap" Text="{Binding GraphToken}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                                <Label Content="OneonteToken" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                                <TextBox Height="80"  TextWrapping="Wrap" Text="{Binding OnenoteToken}" Width="500" HorizontalAlignment="Stretch"  VerticalAlignment="Top" />
+
+                            </StackPanel>
+                        </Grid>
+
+
+
+                    </Grid>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <!--<Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="0" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+                            <Label Content="Sokan" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding SokankanUrl}" Width="500" Margin="0,26,0,0" Name="txtSokan" VerticalAlignment="Top" Grid.ColumnSpan="2" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="1" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" >
+
+                            <Label Content="Cili" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding CiliUrl}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>-->
+
+                        <!--<Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="2" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="Shoushu" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding ShoushuUrl}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>-->
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="3" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="FFMPEG" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding FFMPEGLocation}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="4" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="RPCAddress" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding RPCAddress}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="5" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="m3u8LocationRoot" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding M3u8LocationRoot}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="6" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="TTSMaker Folder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox Height="30" TextWrapping="Wrap" Text="{Binding TTSMakerFolder}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="1" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="TTSMaker Transfer Folder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox Grid.Column="1" Height="30"   
+                              VerticalContentAlignment="Center"  Width="500"
+                              DisplayMemberPath="Name"  IsEditable="True"
+                              SelectedValuePath="Value" Margin="0,26,0,0" 
+                              Background="Yellow"
+                              Text="{Binding TTSMakerTransferFolder}"
+                              FontSize="{DynamicResource ControlFontSize}"
+                              ItemsSource="{Binding TTSMakerTransferItems}"
+                              SelectedItem="{Binding CurrentTTSMakeTransferItem}"
+                              Validation.ErrorTemplate="{x:Null}">
+                                </ComboBox>
+
+                                <Button x:Name="Clear"  CommandParameter="{Binding }" Command="{Binding DeleteTTSMakerTransferFolderCommand}"  Margin="5,0,0,0"  
+                            Width="70">
+                                    <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                                        <Image Margin="2 0"  Width="18" Height="18" Source="/UtilityTools.Modules.AppSettings;component/Resources/Images/clear.png"></Image>
+                                        <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Clear</TextBlock>
+                                    </StackPanel>
+
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Margin="30 10 0 0" HorizontalAlignment="Left" Grid.Row="7" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="Moved Folder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+
+                            <StackPanel Orientation="Horizontal">
+
+                                <ComboBox Grid.Column="1" Height="30" Width="100"  
+VerticalContentAlignment="Center"  
+DisplayMemberPath="Name"  IsEditable="True"
+SelectedValuePath="Value" Margin="0,26,10,0" 
+Background="Yellow"
+Text="{Binding CurrentSellerItem}"
+FontSize="{DynamicResource ControlFontSize}"
+ItemsSource="{Binding SellerHubItems}"
+SelectedItem="{Binding CurrentSeller}"
+Validation.ErrorTemplate="{x:Null}">
+                                </ComboBox>
+                                <ComboBox Grid.Column="1" Height="30"   
+                              VerticalContentAlignment="Center"  Width="390"
+                              DisplayMemberPath="Name"  IsEditable="True"
+                              SelectedValuePath="Value" Margin="0,26,0,0" 
+                              Background="Yellow" IsReadOnly="True"
+                              Text="{Binding MovedTargetFolder}"
+                              FontSize="{DynamicResource ControlFontSize}"
+                              ItemsSource="{Binding MoveFoldItems}"
+                              SelectedItem="{Binding CurrentMoveFoldItem}"
+                              Validation.ErrorTemplate="{x:Null}">
+                                </ComboBox>
+
+                                <Button  CommandParameter="{Binding }" Command="{Binding DeleteFolderCommand}"  Margin="5,0,0,0"  Height="27"
+                            Width="70">
+                                    <StackPanel  Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                                        <Image Margin="2 0"  Width="18" Height="18" Source="/UtilityTools.Modules.AppSettings;component/Resources/Images/clear.png"></Image>
+                                        <TextBlock VerticalAlignment="Center" Margin="5,0,0,0">Clear</TextBlock>
+                                    </StackPanel>
+
+                                </Button>
+
+                            </StackPanel>
+
+
+
+
+
+                            <!--<TextBox Height="30" TextWrapping="Wrap" Text="{Binding MovedTargetFolder}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />-->
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="8" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="PlateAssembles" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="55" TextWrapping="Wrap" Text="{Binding PlateAssembles}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <!--<Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="9" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="RandomCount" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="30" TextWrapping="Wrap" Text="{Binding RandomCount}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>-->
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="10" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="OneDriveFolder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="30" TextWrapping="Wrap" Text="{Binding OneDriveFolder}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="11" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="TTSFolder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="30" TextWrapping="Wrap" Text="{Binding TTSFolder}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="12" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="MangaFolder" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="30" TextWrapping="Wrap" Text="{Binding MangaFolder}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="13" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="RemovingText" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="55" TextWrapping="Wrap" Text="{Binding RemovingText}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="14" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="VLC Path" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="55" TextWrapping="Wrap" Text="{Binding VLCPath}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="15" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="Random Count" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="55" TextWrapping="Wrap" Text="{Binding RandomCount}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+
+                        <Grid Margin="30 10 0 10" HorizontalAlignment="Left" Grid.Row="16" Visibility="{Binding ElementName=ToggleSwitch2,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}"  >
+
+                            <Label Content="TTS Selected Count" Height="28" HorizontalAlignment="Left"  VerticalAlignment="Top" />
+                            <TextBox  Height="55" TextWrapping="Wrap" Text="{Binding TTSSelectCount}" Width="500" HorizontalAlignment="Stretch" Margin="0,26,0,0"  VerticalAlignment="Top" />
+                        </Grid>
+                        
+                    </Grid>
+
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+
+    </DockPanel>
+
+
+</UserControl>

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\Debug\Modules\</OutputPath>
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Images\preview.png" />
+    <None Remove="Resources\Images\sheet.png" />
+    <None Remove="Resources\Images\table.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Prism.Wpf" Version="8.0.0.1909" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Core" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Interfaces" Version="6.0.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="6.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\UtilityTools.Controls\UtilityTools.Controls.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\UtilityTools.Core\UtilityTools.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\preview.png" />
+    <Resource Include="Resources\Images\sheet.png" />
+    <Resource Include="Resources\Images\table.png" />
+  </ItemGroup>
+
+</Project>

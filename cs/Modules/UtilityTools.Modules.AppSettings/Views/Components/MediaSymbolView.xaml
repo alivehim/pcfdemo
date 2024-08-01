@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="UtilityTools.Modules.AppSettings.Views.MediaSymbolView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:UtilityTools.Modules.AppSettings.Views"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d" 
+             xmlns:prism="http://prismlibrary.com/"
+             Loaded="UserControl_Loaded"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="50,0" >
+
+            <ComboBox Canvas.Left="12" Canvas.Top="12" Width="120"  Margin="10,2" Height="25" Name="Location"  Grid.Column="1"  Grid.ColumnSpan="7" Grid.Row="1" Grid.RowSpan="2"  
+                              VerticalContentAlignment="Center"  
+                              DisplayMemberPath="Name"  
+                              SelectedValuePath="Value" 
+                              Background="Yellow"
+                              Text="{Binding Name}"
+                              FontSize="{DynamicResource ControlFontSize}"
+                              ItemsSource="{Binding SymbolTypeItems}"
+                              SelectedItem="{Binding CurrentDropdownItem}"
+                              Validation.ErrorTemplate="{x:Null}">
+            </ComboBox>
+
+            <TextBox Margin="10,2"  Canvas.Left="146" Canvas.Top="12" Height="25" Name="textBox2" 
+            Width="200"     Text="{Binding Value}" />
+
+            <TextBox Margin="10,2" Canvas.Left="360" Canvas.Top="12" Height="25" Name="textBox3" 
+            Width="200"     Text="{Binding Path}" />
+            
+          
+          
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+
+            <TextBox Name="fileFilter" Text="{Binding NameFilter}" Width="150" Height="28" Margin="0,0,100,0"></TextBox>
+            <Button Name="addButton" Margin="10,2"  Canvas.Left="122" Canvas.Top="51" Height="25"  Width="69"  IsDefault="True" Command="{Binding Add}">Add</Button>
+            <Button Margin="10,2"  Name="removeButton" Canvas.Left="197" Canvas.Top="51" Height="25" Width="69" Command="{Binding Delete}" 
+          CommandParameter="{Binding Path=SelectedItem,ElementName=listView1}">Remove</Button>
+            <Button Name="updateButton" Margin="10,2"  Canvas.Left="122" Canvas.Top="51" Height="25" Width="69"  IsDefault="True" Command="{Binding Update}">Update</Button>
+
+        </StackPanel>
+
+        <ListView Grid.Row="3" Margin="50,50"  Name="listView1" 
+    ItemsSource="{Binding PageListView}"  SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name" Width="120" 
+              DisplayMemberBinding="{Binding Name}"></GridViewColumn>
+                    <GridViewColumn Header="Value" Width="350" 
+              DisplayMemberBinding="{Binding Value}"></GridViewColumn>
+                    <GridViewColumn Header="Path" Width="350" 
+              DisplayMemberBinding="{Binding Path}"></GridViewColumn>
+                </GridView>
+            </ListView.View>
+
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:InvokeCommandAction Command="{Binding MouseDoubleCommand}"  CommandParameter="{Binding ElementName=listView1, Path=SelectedItem}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ListView>
+    </Grid>
+</UserControl>

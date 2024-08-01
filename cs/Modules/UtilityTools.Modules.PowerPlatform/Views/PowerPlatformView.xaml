@@ -1,0 +1,72 @@
+﻿<UserControl x:Class="UtilityTools.Modules.PowerPlatform.Views.PowerPlatformView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:UtilityTools.Modules.PowerPlatform.Views"
+                 xmlns:mainview="clr-namespace:UtilityTools.Modules.PowerPlatform.Views"
+    xmlns:behaviours="clr-namespace:UtilityTools.Controls.Behaviours;assembly=UtilityTools.Controls"
+    xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:converter="clr-namespace:UtilityTools.Controls.Converters;assembly=UtilityTools.Controls"
+    xmlns:prism="http://prismlibrary.com/"
+    xmlns:ac="clr-namespace:UtilityTools.Controls.Loading;assembly=UtilityTools.Controls"
+ xmlns:controls="clr-namespace:UtilityTools.Controls;assembly=UtilityTools.Controls"
+                xmlns:errorList="clr-namespace:UtilityTools.Controls.Panels;assembly=UtilityTools.Controls"
+    prism:ViewModelLocator.AutoWireViewModel="True" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Control.Resources>
+        <sys:String x:Key="ModuelName">PowerPlatform</sys:String>
+        <sys:String x:Key="MenuIcon">Resources\Images\canvas.png</sys:String>
+        <sys:String x:Key="IsVisiable">false</sys:String>
+        <sys:String x:Key="IsHeaderVisiable">false</sys:String>
+
+        <converter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converter:NBooleanToVisibilityConverter x:Key="NBooleanToVisibilityConverter" />
+        <converter:TextToVisiablilityConverter x:Key="TextToVisiablilityConverter" />
+
+    </Control.Resources>
+
+    <DockPanel >
+        <ac:AdornedControl Name="LoadingAdorner" IsAdornerVisible="{Binding IsWaiting}">
+            <ac:AdornedControl.AdornerContent>
+                <ac:LoadingWait></ac:LoadingWait>
+            </ac:AdornedControl.AdornerContent>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="5"></RowDefinition>
+                    <RowDefinition Height="300"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Border Grid.Column="0" Grid.ColumnSpan="{Binding ColumnSpan}"  BorderBrush="Gray" BorderThickness="0,1">
+                    <wpf:ChromiumWebBrowser x:Name="Browser" LoadingStateChanged="Browser_LoadingStateChanged"
+                     Address="{Binding Address}">
+                        <!--<behaviors:Interaction.Behaviors>
+                 <behaviours:HoverLinkBehaviour x:Name="HoverLinkBehaviour"/>
+             </behaviors:Interaction.Behaviors>-->
+
+
+
+                    </wpf:ChromiumWebBrowser>
+                </Border>
+
+                <GridSplitter Grid.Row="1"  Height="5" HorizontalAlignment="Stretch">
+
+                </GridSplitter>
+                <TabControl Name="tabControl1" Grid.Row="2" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TabItem Header="Message">
+                        <!--<TextBox Name="textBoxMessage" Text="{Binding TaskMessage}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" BorderThickness="0" />-->
+                        <errorList:ErrorListControl x:Name="errorList" Margin="5" Items="{Binding LogItems}"  />
+                    </TabItem>
+                    <TabItem Header="Throwable">
+                        <TextBox Name="textBoxThrowable" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" BorderThickness="0"/>
+                    </TabItem>
+                </TabControl>
+                
+            </Grid>
+        </ac:AdornedControl>
+    </DockPanel>
+    
+</UserControl>
