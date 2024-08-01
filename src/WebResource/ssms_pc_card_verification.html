@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import from Excel</title>
+    <script src="/WebResources/clp_babel.min.js"></script>
+    <style>
+        body {
+            font-family: "Segoe UI Regular", SegoeUI, "Segoe UI";
+            font-size: 14px;
+        }
+
+
+        .box {
+            width: 100%;
+            height: 100px;
+            /* background-Color: rgb(255, 100, 100); */
+        }
+
+        .head {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(255, 255, 100); */
+        }
+
+        .content {
+            margin-Left: 15px;
+            margin-Right: 45px;
+            line-Height: 50px;
+            font-family: "Segoe UI", "Open Sans", sans-serif;
+            font-size: 15pt;
+        }
+
+        .container {
+            /* background-Color: rgb(100, 154, 255); */
+            width: 100%;
+            height: 380px;
+        }
+
+        #combox {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+        }
+
+        #shareButton {
+            width: 20%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+            margin-left: 3%;
+        }
+
+        #list {
+            width: 580px;
+            height: 300px;
+            /* background-Color: rgb(188, 255, 100); */
+            overflow-y: auto;
+            margin-Left: 15px;
+        }
+
+        .sub_container {
+            display: flex;
+        }
+
+        section {
+            margin: 1em;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 1);
+            border-radius: 5px;
+
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+        }
+
+
+        .filtersTbl {
+            width: 100%
+        }
+
+        .filterName {
+            width: 24%
+        }
+
+        .filterSName {
+            width: 8%;
+            text-align: center;
+        }
+
+        .filterDP {
+            width: 24%
+        }
+
+        .filterDFormat {
+            width: 10%;
+            padding-left: 5px;
+        }
+
+        .showbtn {
+            float: right
+        }
+
+        .prjleft {
+            float: left;
+        }
+
+        .prjTxtField {
+            width: 20%;
+            float: left;
+        }
+
+        .prjLbl {
+            width: 15%;
+            float: left;
+        }
+
+        .projectSummaryArea {
+            width: 50%;
+        }
+
+        .sumCol1 {
+            width: 50%
+        }
+
+        .sumCol2 {
+            width: 25%
+        }
+
+        table {
+            border-collapse: collapse;
+            padding: 5px
+        }
+
+        td {
+            text-align: left;
+            padding: 5px
+        }
+
+        .cmdBar {
+            width: 30%;
+            /*float: right;*/
+        }
+
+        .projectDetailsArea {
+            overflow: auto;
+            white-space: nowrap;
+        }
+
+        .mHeader {
+            width: 90px;
+        }
+
+        .bHeader {
+            width: 150px;
+        }
+
+        .detTbl,
+        .mDetTblCell,
+        .bDetTblCell,
+        .mHeader,
+        .bHeader {
+            border: 1px solid;
+            text-align: center;
+            border-color: rgba(231, 233, 235, 1)
+        }
+
+        .bDetTblCell {
+            width: 75px;
+
+        }
+
+        .headerLbl {
+            float: left;
+        }
+
+        .headerBar {
+            float: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content"></div>
+    <script>
+        const ReactDOM = window.parent.ReactDOM;
+        const React = window.parent.React;
+
+        function getUrlParameter(param) {
+            var queryString = decodeURIComponent(location.search.substring(1).replace('data=', ''));
+
+            var sURLVaiables = queryString.split('&');
+
+            for (var i = 0; i < sURLVaiables.length; i++) {
+                var sParameterName = sURLVaiables[i].split('=');
+
+                if (sParameterName[0] == param) {
+                    return sParameterName[1];
+                }
+            }
+        }
+
+    </script>
+    <script src="/webresources/cc_shared/fluentui_react/8.44.0/libs/fluentui_react.js"></script>
+    <script type="text/babel">
+        const xrm = window.parent.Xrm;
+        const ShareSdk = window.parent.ShareSdk;
+        const FluentUIReact = window.FluentUIReact;
+
+        const options = [
+            { key: 'A', text: 'HKID No. 身份証號碼 e.g.A123***(8)' },
+            { key: 'B', text: 'Passport No. 護照號碼(頭1+尾4個字)' },
+
+        ];
+
+        function App() {
+
+            const [lblContractorID, setlblContractorID] = React.useState('')
+            const [lblContractorName, setlblContractorName] = React.useState('')
+            const [lblResult, setlblResult] = React.useState('')
+            const [passHKID_A, setpassHKID_A] = React.useState('')
+            const [passHKID_B, setpassHKID_B] = React.useState('')
+            const [passPassport_A, setpassPassport_A] = React.useState('')
+            const [passPassport_B, setpassPassport_B] = React.useState('')
+
+            const [isHKIDvisiable, setHKIDvisiable] = React.useState(true)
+
+            const verify = async () => {
+                console.log('verification start')
+                xrm.Utility.showProgressIndicator("Loading")
+                try {
+                    const apijson = await ShareSdk.getEnvVariableAsync('clp_ssms_pc_getcontractorinfoapi')
+
+                    const jsonValue = JSON.parse(apijson)
+                    const result = await ShareSdk.callCCRSAPIAsync(jsonValue.url, jsonValue.key, {
+                        "CONTRACTOR_ID": lblContractorID
+                    })
+
+                    // const result = await ShareSdk.callCCRSAPIAsync(`https://clpapigee.eipqa.clp.com.hk/entMgmt/mgmtTalentOrgArch/getContractorInfo/v1`, jsonValue.key, {
+                    //     "CONTRACTOR_ID": lblContractorID
+                    // })
+
+                    console.log(result)
+
+                    if (isHKIDvisiable) {
+                        var inputhkid = passHKID_A + "***(" + passHKID_B + ")"
+                        console.log(inputhkid)
+                        if (result.HK_ID != null && result.HK_ID.toUpperCase() == inputhkid.toUpperCase()) {
+                            setlblResult("Verification Success")
+                        } else {
+                            setlblResult("Verification Failure")
+                        }
+                    } else {
+                        var inputPass = passPassport_A + "*" + passPassport_B
+
+                        console.log(inputPass)
+                        if (result.PASSPORT_NO != null && result.PASSPORT_NO.toUpperCase() == inputPass.toUpperCase()) {
+                            setlblResult("Verification Success")
+                        } else {
+                            setlblResult("Verification Failure")
+                        }
+                    }
+                }
+                catch (err) {
+                    console.log(err)
+                }
+                finally {
+                    xrm.Utility.closeProgressIndicator()
+                }
+
+            }
+
+            const close = () => {
+                window.close()
+            }
+
+            React.useEffect(() => {
+                const contractorid = getUrlParameter('contractorid')
+                const contractorname = getUrlParameter('contractorname')
+
+                setlblContractorID(contractorid)
+                setlblContractorName(contractorname)
+            }, []);
+
+            return (
+
+                <div className="box">
+                    <section>
+
+                        <div className="filtersArea">
+
+                            <table>
+                                <tr>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            label="Contractor ID 承建商編號"
+                                            value={lblContractorID}
+                                            disabled={true}
+                                            autoAdjustHeight
+                                            underlined />
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            label="Contractor Name 承建商名稱"
+                                            value={lblContractorName}
+                                            disabled={true}
+                                            autoAdjustHeight
+                                            underlined />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section>
+
+                        <FluentUIReact.Label style={{ color: "red" }}>{lblResult}</FluentUIReact.Label>
+                        <FluentUIReact.Separator />
+                        <div className="projectDetailsArea">
+                            <table>
+                                <tr>
+                                    <td colspan="3">
+
+                                        <FluentUIReact.ChoiceGroup defaultSelectedKey="A"
+                                            options={options} label="Pick one"
+                                            onChange={(e, option) => {
+                                                if (option.key === 'A') {
+                                                    setHKIDvisiable(true)
+                                                }
+                                                else {
+                                                    setHKIDvisiable(false)
+                                                }
+                                            }}
+
+                                            required={true} />
+                                    </td>
+
+
+                                </tr>
+                                <tr style={{ display: isHKIDvisiable ? "table-row" : "none" }}>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            style={{ width: "60px" }}
+                                            type="password"
+                                            canRevealPassword
+                                            value={passHKID_A}
+                                            onChange={e => {
+
+                                                setpassHKID_A(e.target.value)
+                                            }}
+                                            autoAdjustHeight
+                                            underlined />
+                                    </td>
+                                    <td>
+                                        ***
+                                    </td>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            style={{ width: "60px" }}
+                                            type="password"
+                                            canRevealPassword
+                                            value={passHKID_B}
+                                            onChange={e => {
+
+                                                setpassHKID_B(e.target.value)
+                                            }}
+                                            autoAdjustHeight
+                                            underlined />
+                                    </td>
+                                </tr>
+                                <tr style={{ display: !isHKIDvisiable ? "table-row" : "none" }}>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            style={{ width: "60px" }}
+                                            type="password"
+                                            canRevealPassword
+                                            value={passPassport_A}
+                                            onChange={e => {
+
+                                                setpassPassport_A(e.target.value)
+                                            }}
+                                            autoAdjustHeight
+                                            underlined />
+                                    </td>
+                                    <td>
+                                        *
+                                    </td>
+                                    <td>
+                                        <FluentUIReact.TextField
+                                            style={{ width: "60px" }}
+                                            type="password"
+                                            canRevealPassword
+                                            value={passPassport_B}
+                                            onChange={e => {
+
+                                                setpassPassport_B(e.target.value)
+                                            }}
+                                            autoAdjustHeight
+                                            underlined />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" align="center">
+                                        <br />
+                                        <FluentUIReact.DefaultButton text='Verify' onClick={verify} style={{ backgroundColor: 'rgb(143,9,9)', color: 'white' }} /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                                        <FluentUIReact.DefaultButton text='Cancel' onClick={close} style={{ backgroundColor: 'rgb(143,9,9)', color: 'white' }} />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+
+            )
+
+        }
+        ReactDOM.render(<App />, document.getElementById('content'));
+
+
+
+    </script>
+</body>
+
+</html>

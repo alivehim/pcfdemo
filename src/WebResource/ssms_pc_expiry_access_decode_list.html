@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiry Access Decode List</title>
+    <script src="/WebResources/clp_babel.min.js"></script>
+    <script src="/WebResources/clp_xlsx.core.min.js"></script>
+    <script src="/WebResources/clp_xlsx.bundle.js"></script>
+    <style>
+        body {
+            font-family: "Segoe UI Regular", SegoeUI, "Segoe UI";
+            font-size: 14px;
+        }
+
+        .box {
+            width: 100%;
+            height: 100px;
+            /* background-Color: rgb(255, 100, 100); */
+        }
+
+        .head {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(255, 255, 100); */
+        }
+
+        .content {
+            margin-Left: 15px;
+            margin-Right: 45px;
+            line-Height: 50px;
+            font-family: "Segoe UI", "Open Sans", sans-serif;
+            font-size: 15pt;
+        }
+
+        .container {
+            /* background-Color: rgb(100, 154, 255); */
+            width: 100%;
+            height: 380px;
+        }
+
+        #combox {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+        }
+
+        #shareButton {
+            width: 20%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+            margin-left: 3%;
+        }
+
+        #list {
+            width: 580px;
+            height: 300px;
+            /* background-Color: rgb(188, 255, 100); */
+            overflow-y: auto;
+            margin-Left: 15px;
+        }
+
+        .sub_container {
+            display: flex;
+        }
+
+        section {
+            margin: 1em;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 1);
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        .filtersArea {
+            padding-top: 20px;
+        }
+
+        .filtersTbl {
+            width: 100%
+        }
+
+        .filterName {
+            width: 24%
+        }
+
+        .filterSName {
+            width: 8%;
+            text-align: center;
+        }
+
+        .filterDP {
+            width: 24%
+        }
+
+        .filterDFormat {
+            width: 10%;
+            padding-left: 5px;
+        }
+
+        .showbtn {
+            float: right
+        }
+
+        .prjleft {
+            float: left;
+        }
+
+        .prjTxtField {
+            width: 20%;
+            float: left;
+        }
+
+        .prjLbl {
+            width: 15%;
+            float: left;
+        }
+
+        .projectSummaryArea {
+            width: 50%;
+        }
+
+        .sumCol1 {
+            width: 50%
+        }
+
+        .sumCol2 {
+            width: 25%
+        }
+
+        .cmdBar {
+            width: 30%;
+            /*float: right;*/
+        }
+
+        .projectDetailsArea {
+            overflow: auto;
+            white-space: nowrap;
+        }
+
+        .mHeader {
+            width: 90px;
+        }
+
+        .bHeader {
+            width: 150px;
+        }
+
+        .detTbl,
+        .mDetTblCell,
+        .bDetTblCell,
+        .mHeader,
+        .bHeader {
+            border: 1px solid;
+            text-align: center;
+            border-color: rgba(231, 233, 235, 1)
+        }
+
+        .bDetTblCell {
+            width: 75px;
+
+        }
+
+        .headerLbl {
+            float: left;
+        }
+
+        .headerBar {
+            float: left;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            padding: 5px
+        }
+
+        td {
+            text-align: left;
+            padding: 5px
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content"></div>
+    <script>
+        const ReactDOM = window.parent.ReactDOM;
+        const React = window.parent.React;
+    </script>
+    <script src="/webresources/cc_shared/fluentui_react/8.44.0/libs/fluentui_react.js"></script>
+    <script type="text/babel">
+        const xrm = window.parent.Xrm;
+        const ShareSdk = window.parent.ShareSdk;
+        const FluentUIReact = window.FluentUIReact;
+        const isSecurity = ShareSdk.isProximityCardSecurity() || ShareSdk.isSSMSViewer()
+        const getExpirySubstattionsAsync = async (start, end) => {
+            var fetchXml = `<fetch distinct="true" aggregate="true">
+  <entity name="clp_proximity_card_encode">
+    <attribute name="clp_card" alias="cardid" groupby="true" />
+    <attribute name="clp_ss_code" alias="sscode" groupby="true" />
+    <link-entity name="clp_proximitycardrequest" from="clp_proximitycardrequestid" to="clp_proximity_card_request" alias="request">
+      <attribute name="clp_accessperiodto" alias="SS_EXPIRY_DATE" aggregate="max" distinct="true" />
+      <filter>
+        <condition attribute="clp_accessperiodto" operator="last-x-years" value="99" />
+        <condition attribute="clp_accessperiodto" operator="on-or-after" value="${start}" />
+        <condition attribute="clp_accessperiodto" operator="on-or-before" value="${end}" />
+
+      </filter>
+    </link-entity>
+  </entity>
+</fetch>`
+
+            return fetch(
+                `/api/data/v9.0/clp_proximity_card_encodes?fetchXml=${encodeURI(fetchXml)}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Prefer': 'odata.include-annotations="*"',
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+                return Promise.resolve(res.value)
+            }).catch(err => {
+                console.error(err)
+                throw err;
+            })
+        }
+
+        const retriveSSCODEAsync = (cardid, expirydate) => {
+
+            const fetchXml = `<fetch aggregate="true">
+  <entity name="clp_proximity_card_encode">
+    <attribute name="clp_ss_code" alias="sscode" groupby="true" />
+    <filter>
+      <condition attribute="clp_card" operator="eq" value="${cardid}" />
+    </filter>
+    <link-entity name="clp_proximitycardrequest" from="clp_proximitycardrequestid" to="clp_proximity_card_request">
+      <filter>
+        <condition attribute="clp_accessperiodto" operator="eq" value="${expirydate}" />
+      </filter>
+    </link-entity>
+  </entity>
+</fetch>`
+
+            return fetch(
+                `/api/data/v9.0/clp_proximity_card_encodes?fetchXml=${encodeURI(fetchXml)}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Prefer': 'odata.include-annotations="*"',
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+                return Promise.resolve(res.value)
+            }).catch(err => {
+                console.error(err)
+                throw err;
+            })
+
+        }
+
+        const getPcExpiredSsAsync = async (cardid, expirydate) => {
+            let result = await retriveSSCODEAsync(cardid, expirydate)
+
+            return result.map(p => p.sscode).join(",")
+        }
+
+        const getCardDetailAsync = (cardid) => {
+            const fetchXml = `<fetch>
+  <entity name="clp_proximitycardinventory">
+    <attribute name="clp_name" />
+    <attribute name="clp_proximitycardinventoryid" />
+    <filter>
+      <condition attribute="clp_proximitycardinventoryid" operator="eq" value="${cardid}" />
+    </filter>
+    <link-entity name="clp_proximitycardapplicant" from="clp_proximitycardapplicantid" to="clp_holder" alias="applicant">
+      <attribute name="clp_contractorid" />
+      <attribute name="clp_name" />
+    </link-entity>
+  </entity>
+</fetch>`
+
+            return fetch(
+                `/api/data/v9.0/clp_proximitycardinventories?fetchXml=${encodeURI(fetchXml)}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Prefer': 'odata.include-annotations="*"',
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+                return Promise.resolve(res.value)
+            }).catch(err => {
+                console.error(err)
+                throw err;
+            })
+        }
+
+        const getPROXCardREQDTLsAsync = (carid) => {
+
+            const fetchXml = `<fetch version="1.0" output-format="xml-platform" mapping="logical">
+  <entity name="clp_proximity_card_request_detail">
+    <attribute name="clp_proximity_card" />
+    <attribute name="clp_detail_status" />
+    <attribute name="clp_collect_cancelled" />
+    <filter>
+      <condition attribute="clp_proximity_card" operator="eq" value="${carid}" />
+      <condition attribute="clp_detail_status" operator="eq" value="768230003" />
+    </filter>
+    <link-entity name="clp_proximitycardrequest" from="clp_proximitycardrequestid" to="clp_proximity_card_request" alias="request">
+      <attribute name="clp_proximitycardrequestid" />
+      <attribute name="clp_name" />
+      <filter>
+        <condition attribute="clp_workflow_status" operator="eq" value="768230005" />
+      </filter>
+    </link-entity>
+    <link-entity name="clp_proximitycardinventory" from="clp_proximitycardinventoryid" to="clp_proximity_card" alias="card">
+      <attribute name="clp_name" />
+    </link-entity>
+  </entity>
+</fetch>`
+            return fetch(
+                `/api/data/v9.0/clp_proximity_card_request_details?fetchXml=${encodeURI(fetchXml)}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Prefer': 'odata.include-annotations="*"',
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+                return Promise.resolve(res.value)
+            }).catch(err => {
+                console.error(err)
+                throw err;
+            })
+        }
+
+        // const getEncodeCountAsync = (cardid, requestid) => {
+        //     return fetch(`/api/data/v9.0/clp_proximity_card_encodes?$filter=_clp_card_value eq '${cardid}' and _clp_proximity_card_request_value eq '${requestid}'$apply=aggregate($count as Count)`,
+        //         {
+        //             headers: {
+        //                 "Content-Type": "application/json",
+        //                 'Prefer': 'odata.include-annotations="*"',
+        //             }
+        //         }
+        //     ).then(res => res.json()).then(res => {
+        //         if (res.error) {
+        //             throw new Error(res.error.message)
+        //         }
+        //         return Promise.resolve(res.value[0].Count||0)
+        //     }).catch(err => {
+        //         console.error(err)
+        //         throw err;
+        //     })
+        // }
+        const decodeExpiryAccessAsync = async (item, currentCLPUser) => {
+
+
+            //Update Detail Status to Completed/ Cancel
+            const details = await getPROXCardREQDTLsAsync(item.cardid)
+            let syncDetails = []
+            for (var detail of details) {
+                const isDecodeAll = await window.parent.ShareSdk.isPROXCardREQDecodeAllAsync(item.cardid, detail["request.clp_proximitycardrequestid"])
+                if (isDecodeAll) {
+
+                    //	If CBool(ReplaceNull(RsDB("COLLECT_CANCEL"),false)) Then newDtlStatus = PC_DTLSTATUS_CAN Else newDtlStatus = PC_DTLSTATUS_CMP
+
+                    if (detail.clp_collect_cancelled) {
+                        newDtlStatus = ShareSdk.PROXCardIndividualStatus.CollectionCancelled
+                    } else {
+                        newDtlStatus = ShareSdk.PROXCardIndividualStatus.Completed
+                    }
+
+                    syncDetails.push({
+                        "appno": detail["request.clp_name"],
+                        "appid": detail["request.clp_proximitycardrequestid"],
+                        "cardno": detail["card.clp_name"],
+                        "cardid": item.cardid,
+                        "detailstatus": ShareSdk.PROXCardIndividualStatusMapping[newDtlStatus]
+                    })
+
+                    await ShareSdk.updatePROXCardREQDTLStatusAsync(detail.clp_proximity_card_request_detailid, newDtlStatus)
+                }
+            }
+
+            const sscodes = item.sscode.split(',')
+
+            for (var sscode of sscodes) {
+
+                const encodelist = await ShareSdk.getPROXCardSubstationEncodeListAsync(item.cardid, sscode)
+                for (var encode of encodelist) {
+                    //Insert Decode List
+                    await ShareSdk.addPROXCardDecodeAsync(encode._clp_proximity_card_request_value, encode._clp_card_value, encode.clp_ss_code, currentCLPUser.clp_user)
+                    //Delete Encode List
+                    await ShareSdk.DeleteEncodeAsync(encode.clp_proximity_card_encodeid)
+                }
+
+                //await syncEncodeDataAsync(item.cardid, item.cardno, sscode)
+
+            }
+
+
+            //await syncDataAsync(syncDetails)
+        }
+
+        const syncDataAsync = async (syncDetails) => {
+
+            for (var item of syncDetails) {
+                await ShareSdk.addSyncDataAsync(ShareSdk.DataSyncType.UpdateDeatilStatus,
+                    item.appid, item.cardid, item.appno, item.cardno, item.detailstatus, '')
+            }
+
+        }
+
+        const syncEncodeDataAsync = async (cardid, cardno, sscode) => {
+            await ShareSdk.addSyncDataAsync(ShareSdk.DataSyncType.DeleteEncodes, null, cardid,
+                cardno, sscode)
+        }
+
+
+        var dateTime = new Date()
+        var dateTimeEnd = dateTime.setDate(dateTime.getDate() - 1)
+        dateTimeEnd = new Date(dateTimeEnd)
+
+        dateTime = new Date()
+        var dateTimeStart = dateTime.setMonth(dateTime.getMonth() - 1)
+        dateTimeStart = new Date(dateTimeStart)
+
+        function App() {
+
+            const [columns, setColumns] = React.useState([
+                { key: 'cardno', name: 'Card No. 磁咭號碼', fieldName: 'Card No. 磁咭號碼', minWidth: 100, maxWidth: 200 },
+                { key: 'holdername', name: 'Card Holder Name 磁咭持有人', fieldName: 'Card Holder Name 磁咭持有人', minWidth: 100, maxWidth: 200 },
+                { key: 'contractid', name: 'Contractor ID 承包商編號', fieldName: 'Contractor ID 承包商編號', minWidth: 100, maxWidth: 200, isResizable: true },
+                { key: 'sscode', name: 'Expired Substation 過期變電站', fieldName: 'Expired Substation 過期變電站', minWidth: 100, maxWidth: 200, isResizable: true },
+                { key: 'expirydate', name: 'Expiry Date 期限', fieldName: '期限', minWidth: 100, maxWidth: 200, isResizable: true },
+            ])
+
+            const [items, setItems] = React.useState([]);
+
+
+
+
+            const [selectedFromDate, setSelectedFromDate] = React.useState(dateTimeStart);
+            const [selectedToDate, setSelectedToDate] = React.useState(dateTimeEnd);
+            
+            const [displayDecodeButton,setDisplayDecodeButton]=React.useState(ShareSdk.isProximityCardSecurity());
+
+            const [selection, setSelection] = React.useState(
+                new FluentUIReact.Selection(
+                    {
+                        onSelectionChanged: () => {
+                            var selectionCount = selection.getSelectedCount();
+                            if (selectionCount != 0) {
+                                // window.parent.$("#btnDeleteWBS").show()
+                            } else {
+                                // window.parent.$("#btnDeleteWBS").hide()
+                            }
+
+                        },
+                        selectionMode: window.FluentUIReact.SelectionMode.multiple,
+                    }
+                )
+            );
+
+            const onFormatDate = (date) => {
+                return date.toLocaleDateString("en-GB");//!date ? '' : date.getDate() + '/' + (date.getMonth() + 1) + '/' + (date.getFullYear());
+            }
+
+            const decode = async () => {
+                xrm.Utility.showProgressIndicator("Loading")
+                try {
+                    const selectedItems = selection.getSelection();
+                    console.log(selectedItems)
+                    var currentCLPUser = await ShareSdk.getCurrentClpUserAsync()
+                    for (var item of selectedItems) {
+                        await decodeExpiryAccessAsync(item, currentCLPUser)
+                    }
+
+                    await ShareSdk.openAlertDialog('Substation Access is decoded successfully')
+
+
+
+                }
+                catch (err) {
+                    window.parent.ShareSdk.showGlobalNotification(err.message, 2)
+                }
+                finally {
+                    getData()
+                    xrm.Utility.closeProgressIndicator()
+                }
+            }
+
+            const exportFile = () => {
+
+                var filename = "Proximity Card Expiry Access Decode List.xlsx";
+                var ws_name = "Sheet1";
+                var wb = XLSX.utils.book_new();
+                var ws = XLSX.utils.json_to_sheet(items.map(p => {
+                    return {
+                        "Card No. 磁咭號碼": p.cardno,
+                        "Card Holder Name 磁咭持有人": p.holdername,
+                        "Contractor ID 承包商編號": p.contractid,
+                        "Expired Substation 過期變電站": p.sscode,
+                        "Expiry Date 期限": p.expirydate
+                    }
+
+                }));
+                XLSX.utils.book_append_sheet(wb, ws, ws_name);
+                XLSX.writeFile(wb, filename);
+
+            }
+
+
+
+            const getData = async () => {
+                xrm.Utility.showProgressIndicator("Loading")
+                try {
+                    let resultItems = []
+                    const result = await getExpirySubstattionsAsync(ShareSdk.formateDateTime(selectedFromDate, 'yyyy-MM-dd'), ShareSdk.formateDateTime(selectedToDate, 'yyyy-MM-dd'))
+
+                    //remove duplicate item 
+                    var filterArray = result.reduce((accumulator, current) => {
+                        if (
+                            !accumulator.some(
+                                (item) => item.cardid === current.cardid && item.SS_EXPIRY_DATE === current.SS_EXPIRY_DATE
+                            )
+                        ) {
+                            accumulator.push(current);
+                        }
+                        return accumulator;
+                    }, []);
+                    console.log(filterArray);
+
+
+                    for (let data of filterArray) {
+                        if (data.cardid) {
+
+                            var cards = await getCardDetailAsync(data.cardid)
+
+                            if (cards.length != 0) {
+                                var expirdSs = await getPcExpiredSsAsync(data.cardid, data.SS_EXPIRY_DATE)
+                                resultItems.push({
+                                    cardid: cards[0]["clp_proximitycardinventoryid"],
+                                    cardno: cards[0]["clp_name"],
+                                    holdername: cards[0]["applicant.clp_name"],
+                                    contractid: cards[0]["applicant.clp_contractorid"],
+                                    sscode: expirdSs,
+                                    expirydate: data["SS_EXPIRY_DATE@OData.Community.Display.V1.FormattedValue"]
+                                })
+                            }
+
+                        }
+
+
+                    }
+                    setItems(resultItems)
+                }
+                catch (err) {
+                    window.parent.ShareSdk.showGlobalNotification(err.message, 2)
+                }
+                finally {
+                    xrm.Utility.closeProgressIndicator()
+                }
+            }
+
+            const onRenderItemColumn = (item, index, column) => {
+                const key = column.key;
+                switch (key) {
+                    default:
+                        return String(item[key]);
+                }
+            };
+
+            const handleColumnClick = (ev, column) => {
+
+
+            };
+
+            const Search = async () => {
+                await getData()
+                selection.setAllSelected(true)
+            }
+
+            React.useEffect(() => {
+                // getData().then(res => {
+                //     selection.setAllSelected(true)
+                // })
+            }, []);
+
+
+            const downloadIcon = FluentUIReact.IIconProps = { iconName: 'Download' };
+            return isSecurity ? (
+
+                <div className="box">
+
+                    <section>
+
+                        <div className="filtersArea">
+
+
+                            <tabel border="0" cellspacing="1" style={{ verticalAlign: "middle" }} >
+
+                                <tr>
+                                    <td>
+                                        Expiry Date
+                                    </td>
+                                    <td style={{ width: "150px" }}>
+                                        <FluentUIReact.DatePicker
+                                            value={selectedFromDate}
+                                            //allowTextInput
+                                            formatDate={onFormatDate}
+                                            onSelectDate={(date) => { setSelectedFromDate(date); }}
+                                        />
+
+                                        {
+                                            // calendar_from()
+                                        }
+                                    </td>
+                                    <td>
+                                        To至
+                                    </td>
+                                    <td style={{ width: "150px" }}>
+                                        <FluentUIReact.DatePicker
+                                            value={selectedToDate}
+                                            //allowTextInput
+                                            formatDate={onFormatDate}
+                                            onSelectDate={(date) => { setSelectedToDate(date); }}
+                                        />
+
+
+                                    </td>
+
+                                    <td>
+                                        <FluentUIReact.DefaultButton text='Search' onClick={Search} style={{ backgroundColor: 'rgb(143,9,9)', color: 'white' }} />
+                                    </td>
+
+                                </tr>
+                            </tabel>
+
+                        </div>
+                    </section>
+
+                    <section>
+                        <div className="header">
+                            <FluentUIReact.Stack horizontal horizontalAlign="space-between">
+                                {[
+                                    //<div className="headerLbl"> 
+                                    <FluentUIReact.Label>Proximity Card Expiry Access Decode List</FluentUIReact.Label>,
+                                    <FluentUIReact.Stack horizontal horizontalAlign="end">
+                                        {[
+                                            (displayDecodeButton?<FluentUIReact.CommandBarButton
+                                                text="Decode" 
+                                                onClick={decode}
+                                            />:null),
+                                            <FluentUIReact.CommandBarButton
+                                                iconProps={downloadIcon}
+                                                text="Export"
+                                                onClick={exportFile}
+                                            />
+
+                                        ]}
+                                    </FluentUIReact.Stack>
+                                ]}
+                            </FluentUIReact.Stack>
+                        </div>
+                        <FluentUIReact.Separator />
+                        <div>
+                            <FluentUIReact.DetailsList
+                                items={items}
+                                columns={columns}
+                                // onItemInvoked={onItemInvoked}
+                                onRenderItemColumn={onRenderItemColumn}
+                                // columnReorderOptions={isColumnReorderEnabled ? getColumnReorderOptions() : undefined}
+                                ariaLabelForSelectionColumn="Toggle selection"
+                                ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+                                checkButtonAriaLabel="select row"
+                                layoutMode={FluentUIReact.DetailsListLayoutMode.justified}
+                                selection={selection}
+                                onItemInvoked={handleColumnClick}
+                            />
+                        </div>
+                    </section>
+
+
+                </div>
+
+
+                // <div className="box">
+                //     <div id="decodeButton"><FluentUIReact.DefaultButton text='Decode' onClick={decode} style={{ backgroundColor: 'rgb(143,9,9)', color: 'white' }} /></div>
+
+                // </div>
+            ) : null
+        }
+        ReactDOM.render(<App />, document.getElementById('content'));
+
+
+
+    </script>
+</body>
+
+</html>
