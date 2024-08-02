@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success</title>
+    <script src="/WebResources/clp_babel.min.js"></script>
+    <script src="/WebResources/clp_xlsx.core.min.js"></script>
+    <script src="/WebResources/clp_xlsx.bundle.js"></script>
+    <style>
+        body {
+            font-family: "Segoe UI Regular", SegoeUI, "Segoe UI";
+            font-size: 14px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .imgcontainer {
+            display: flex;
+            align-items: center;
+            place-content: center;
+            flex-direction: column;
+            min-height: 80px;
+        }
+
+        .bottom button {
+
+            margin-right: 1.4rem;
+
+            border-color: #d31145;
+            color: #d31145;
+            width: fit-content;
+            margin-bottom: 15px;
+
+            outline: transparent;
+            position: relative;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14px;
+            font-weight: 400;
+            box-sizing: border-box;
+            border: 1px solid rgb(138, 136, 134);
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            padding: 0px 16px;
+            border-radius: 2px;
+            min-width: 80px;
+            height: 32px;
+            background-color: rgb(255, 255, 255);
+            color: rgb(50, 49, 48);
+            user-select: none;
+        }
+
+        .bottom {
+            display: flex;
+            place-content: flex-end;
+            height: 50px;
+            align-self: flex-end;
+        }
+
+        .successful {
+            color: rgb(68, 68, 68);
+        }
+
+        .hint {
+            display: none;
+            color: grey;
+            padding: .5em .5em
+        }
+
+        .referenceno {
+            display: none;
+            color: grey;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content"></div>
+    <script>
+        const ReactDOM = window.parent.ReactDOM;
+        const React = window.parent.React;
+
+        function getUrlParameter(param) {
+            var queryString = decodeURIComponent(location.search.substring(1).replace('data=', ''));
+
+            var sURLVaiables = queryString.split('&');
+
+            for (var i = 0; i < sURLVaiables.length; i++) {
+                var sParameterName = sURLVaiables[i].split('=');
+
+                if (sParameterName[0] == param) {
+                    return sParameterName[1];
+                }
+            }
+        }
+
+    </script>
+    <script src="/webresources/cc_shared/fluentui_react/8.44.0/libs/fluentui_react.js"></script>
+    <script type="text/babel">
+        const xrm = window.parent.Xrm;
+        const ShareSdk = window.parent.ShareSdk;
+        const FluentUIReact = window.FluentUIReact;
+
+        const demo = () => {
+
+            const requestid = getUrlParameter('requestid')
+            console.log(requestid)
+
+            const wb = XLSX.utils.book_new();
+
+            // STEP 2: Create data rows and styles
+            let row = [
+                { v: "Courier: 24", t: "s", s: { font: { name: "Courier", sz: 24 } } },
+                { v: "bold & color", t: "s", s: { font: { bold: true, color: { rgb: "FF0000" } } } },
+                { v: "fill: color", t: "s", s: { fill: { fgColor: { rgb: "E9E9E9" } } } },
+                { v: "line\nbreak", t: "s", s: { alignment: { wrapText: true, vertical: "center", horizontal: "center" } } },
+            ];
+
+            let merges = [
+                { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } } /* A1:A2 */
+            ];
+
+            var wscols = [
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+                { wpx: 20 },
+            ];
+
+
+            // STEP 3: Create worksheet with rows; Add worksheet to workbook
+            const ws = XLSX.utils.aoa_to_sheet([row]);
+            ws["!cols"] = wscols;
+            ws["!merges"] = merges;
+            XLSX.utils.book_append_sheet(wb, ws, "readme demo");
+
+
+            // STEP 4: Write Excel file to browser
+            XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx");
+
+        }
+
+        const exportFile = async () => {
+
+            const requestid = getUrlParameter('requestid')
+            const request = await ShareSdk.getPROXCardRequestAsync(requestid)
+            // var ws_name = "SheetJS";
+
+            // var wb = new XLSX.utils.book_new()
+            // var ws = mergeCell();
+            // wb.SheetNames.push(ws_name);
+            // console.log(ws);
+            // console.log(JSON.stringify(ws));
+            // wb.Sheets[ws_name] = ws;
+
+            // // STEP 4: Write Excel file to browser
+            // XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx");
+
+            let sheetContent = {
+                "!ref": "A1:AR100",
+                E2: {
+                    t: 's', v: "進入中電輸電變電站\n新電腦磁咭 / 現有磁咭編碼 申請表",
+                    s: {
+                        alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                        font: { name: "細明體", sz: 12, bold: true, }
+                    }
+
+                },
+                // B1: { t: 'n', v: 1 },
+                B5: { t: 's', v: '申請編號:' },
+                D5: {
+                    t: 's', v: request.clp_name, s: {
+                        font: { name: "ARIAL", sz: 10 }
+                    }
+                },
+                K5: { t: 's', v: '申請日期:' },
+                P5: {
+                    t: 's', v: request["clp_requestdate@OData.Community.Display.V1.FormattedValue"],
+                    s: {
+                        font: { name: "ARIAL", sz: 10 }
+                    }
+                },
+                X5: { t: 's', v: '狀態:' },
+                AA5: {
+                    t: 's', v: request['clp_workflow_status@OData.Community.Display.V1.FormattedValue'],
+                    s: {
+                        font: { name: "ARIAL", sz: 10 }
+                    }
+                },
+
+                B7: {
+                    t: 's', v: '申請人填寫',
+                    s: {
+                        font: { name: "細明體", sz: 10, bold: true, underline: true }
+                    }
+                },
+                B9: { t: 's', v: '承包商/訪客商號:' },
+                G9: { t: 's', v: request["_clp_lut_ctrcomp_value@OData.Community.Display.V1.FormattedValue"] },
+                X9: { t: 's', v: '中電工作指示編號:' },
+                AF9: { t: 's', v: request.clp_clpworkorderno || '' },
+
+                B11: { t: 's', v: '要進入的變電站:' },
+                G11: { t: 's', v: request.clp_ss_display },
+                G13: { t: 's', v: `(WE:${request.clp_ss_we} NR:${request.clp_ss_nr})` },
+
+                B15: { t: 's', v: '工作內容:' },
+                G15: { t: 's', v: request.clp_workcontent },
+
+                B17: { t: 's', v: '入站工作日期:' },
+                G17: { t: 's', v: '由' },
+                I17: { t: 's', v: request["clp_accessperiodfrom@OData.Community.Display.V1.FormattedValue"] },
+                M17: { t: 's', v: '至' },
+                O17: { t: 's', v: request["clp_accessperiodto@OData.Community.Display.V1.FormattedValue"] },
+                R17: { t: 's', v: '(ISMS 磁咭不可超過六個月)' },
+
+                B19: { t: 's', v: '負責幹練人員姓名:' },
+                G19: { t: 's', v: request["_clp_responsible_cp_value@OData.Community.Display.V1.FormattedValue"]??request.clp_responsiblecp },
+                S19: { t: 's', v: '授權證書號碼:' },
+                X19: { t: 's', v: request.clp_authorizationcode },
+                AD19: { t: 's', v: '聯絡電話:' },
+                AG19: { t: 's', v: request.clp_phoneno },
+
+                B21: { t: 's', v: '承包商負責人姓名:' },
+                G21: { t: 's', v: request.clp_contractorresponsibleperson },
+                AD21: { t: 's', v: '聯絡電話:' },
+                AG21: { t: 's', v: request.clp_contractorphoneno },
+
+                B23: {
+                    t: 's', v: '所有申請進入中電輸電變電站工作人員必須獨立填寫個人資料如下:',
+                    s: {
+                        font: { name: "細明體", sz: 10, bold: true }
+                    }
+                },
+
+                C26: {
+                    t: 's', v: '類別',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                H26: {
+                    t: 's', v: '磁咭號碼',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                L26: {
+                    t: 's', v: '申請人姓名',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                U25: {
+                    t: 's', v: '承辦商\n編號',
+                    s: {
+                        alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                Z26: {
+                    t: 's', v: '聯絡電話',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                AF26: {
+                    t: 's', v: '狀態',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+                AK26: {
+                    t: 's', v: '備註/拒絕原因',
+                    s: {
+                        font: { name: "細明體", sz: 10, underline: true, }
+                    }
+                },
+
+                "!merges": [
+                    { s: { r: 1, c: 4 }, e: { r: 2, c: 25 + 6 } }, /*E2 AG3*/ //title
+                    { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } }, /*B5 C5*/ //申請編號
+                    { s: { r: 4, c: 3 }, e: { r: 4, c: 8 } }, // applition no
+                    { s: { r: 4, c: 10 }, e: { r: 4, c: 14 } },  // request date text
+                    { s: { r: 4, c: 15 }, e: { r: 4, c: 18 } },  // reqeust value
+                    { s: { r: 4, c: 23 }, e: { r: 4, c: 25 } },  //status text
+                    { s: { r: 4, c: 26 }, e: { r: 4, c: 32 } },  //format status
+
+
+                    { s: { r: 6, c: 1 }, e: { r: 6, c: 5 } }, //申請人填寫
+                    { s: { r: 8, c: 1 }, e: { r: 8, c: 5 } }, //承包商/訪客商號:
+                    { s: { r: 8, c: 6 }, e: { r: 8, c: 20 } },
+                    { s: { r: 8, c: 23 }, e: { r: 8, c: 29 } },//中電工作指示編號
+
+                    { s: { r: 10, c: 1 }, e: { r: 10, c: 5 } },
+                    { s: { r: 10, c: 6 }, e: { r: 10, c: 42 } },
+                    { s: { r: 12, c: 6 }, e: { r: 12, c: 20 } },
+
+                    { s: { r: 14, c: 1 }, e: { r: 14, c: 5 } },
+                    { s: { r: 14, c: 6 }, e: { r: 14, c: 42 } },
+
+                    { s: { r: 16, c: 1 }, e: { r: 16, c: 5 } },
+                    { s: { r: 16, c: 6 }, e: { r: 16, c: 7 } },
+                    { s: { r: 16, c: 8 }, e: { r: 16, c: 11 } },
+                    { s: { r: 16, c: 12 }, e: { r: 16, c: 13 } },
+                    { s: { r: 16, c: 14 }, e: { r: 16, c: 16 } },
+                    { s: { r: 16, c: 17 }, e: { r: 16, c: 26 } },
+
+                    { s: { r: 18, c: 1 }, e: { r: 18, c: 5 } },
+                    { s: { r: 18, c: 6 }, e: { r: 18, c: 15 } },
+                    { s: { r: 18, c: 18 }, e: { r: 18, c: 22 } },
+                    { s: { r: 18, c: 23 }, e: { r: 18, c: 27 } },
+                    { s: { r: 18, c: 26 + 3 }, e: { r: 18, c: 26 + 3 + 2 } },  // PHONE
+                    { s: { r: 18, c: 26 + 3 + 2 + 1 }, e: { r: 18, c: 26 + 3 + 2 + 1 + 3 } },
+
+                    { s: { r: 20, c: 1 }, e: { r: 20, c: 5 } },
+                    { s: { r: 20, c: 6 }, e: { r: 20, c: 26 } },
+                    { s: { r: 20, c: 26 + 3 }, e: { r: 20, c: 26 + 3 + 2 } },  // PHONE
+                    { s: { r: 20, c: 26 + 3 + 2 + 1 }, e: { r: 20, c: 26 + 3 + 2 + 1 + 3 } },
+
+                    { s: { r: 22, c: 1 }, e: { r: 22, c: 27 } },
+
+                    { s: { r: 25, c: 2 }, e: { r: 25, c: 6 } },
+                    { s: { r: 25, c: 7 }, e: { r: 25, c: 10 } },
+                    { s: { r: 25, c: 11 }, e: { r: 25, c: 19 } },
+                    { s: { r: 24, c: 20 }, e: { r: 25, c: 23 } },
+                    { s: { r: 25, c: 25 }, e: { r: 25, c: 30 } },
+                    { s: { r: 25, c: 31 }, e: { r: 25, c: 34 } },
+                    { s: { r: 25, c: 36 }, e: { r: 25, c: 37 } },
+                ],
+                "!cols": [
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 40 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },
+                    { wpx: 20 },//AL
+                ]
+            }
+
+            let startRowIndex = appendDetail(sheetContent, request)
+            startRowIndex = appendFooter(sheetContent, request, startRowIndex + 3)
+            startRowIndex = appendFooter(sheetContent, request, startRowIndex + 2)
+
+            await appendRemarks(sheetContent, request, startRowIndex + 2)
+
+            XLSX.writeFile({
+                SheetNames: ["Sheet1"],
+                Sheets: {
+                    Sheet1: sheetContent
+                }
+            }, `${request.clp_name}.xlsx`);
+
+        }
+
+        const appendDetail = (sheetContent, request) => {
+            const startRow = 28
+            let index = 0;
+            let i = 1
+            for (var item of request.clp_pc_request_detail_pc_request) {
+                //index
+                sheetContent[`B${startRow + index}`] = { t: 's', v: `${i}` }
+                //类别
+                sheetContent[`C${startRow + index}`] = { t: 's', v: item["clp_app_type@OData.Community.Display.V1.FormattedValue"] }
+                sheetContent[`H${startRow + index}`] = { t: 's', v: item.clp_card_no || '' }
+                sheetContent[`L${startRow + index}`] = { t: 's', v: item.clp_applicant_name || '' }
+                //承辦商編號		
+                //phone	
+                sheetContent[`Z${startRow + index}`] = { t: 's', v: item.clp_phone_no || '' }
+                //状态
+                sheetContent[`AF${startRow + index}`] = { t: 's', v: item.clp_detail_status || '' }
+                //remark
+                sheetContent[`AK${startRow + index}`] = { t: 's', v: item.clp_remarks || '' }
+                index += 1
+                i++
+            }
+
+            return startRow + index
+        }
+
+        const appendFooter = (sheetContent, request, startRowIndex) => {
+            sheetContent[`B${startRowIndex}`] = {
+                t: 's', v: '負責工程師填寫',
+                s: {
+                    font: { name: "細明體", sz: 10, underline: true, bold: true }
+                }
+            }
+
+            sheetContent[`B${startRowIndex + 2}`] = { t: 's', v: '發咭部門:' }
+            sheetContent[`F${startRowIndex + 2}`] = { t: 's', v: request["clp_issuedepartment@OData.Community.Display.V1.FormattedValue"] }
+
+            sheetContent[`B${startRowIndex + 4}`] = { t: 's', v: '已選批准人:' }
+            sheetContent[`F${startRowIndex + 4}`] = { t: 's', v: request["_clp_chosenapprover_value@OData.Community.Display.V1.FormattedValue"] }
+            sheetContent[`S${startRowIndex + 4}`] = { t: 's', v: '部門/支部:' }
+            sheetContent[`W${startRowIndex + 4}`] = { t: 's', v: request.clp_approver_deptbranch }
+
+            return startRowIndex + 4
+        }
+
+        const appendRemarks = async (sheetContent, request, remarkStartRowIndex) => {
+
+            let retVal = [];
+            let log = await addRe(request, '負責工程師:')
+            if (log) {
+                retVal.push(log)
+            }
+
+            log = await addApprover(request, '批准人:')
+            if (log) {
+                retVal.push(log)
+            }
+
+            log = await addReview(request)
+            if (log) {
+                retVal.push(log)
+            }
+
+            log = await addmm(request)
+            if (log) {
+                retVal.push(log)
+            }
+
+            log = await addAdmin(request)
+            if (log) {
+                retVal.push(log)
+            }
+
+            log = await addSecurity(request)
+            if (log) {
+                retVal.push(log)
+            }
+
+
+            sheetContent[`B${remarkStartRowIndex}`] = {
+                t: 's', v: '備註',
+                s: {
+                    font: { name: "細明體", sz: 10, underline: true, bold: true }
+                }
+            }
+            let startRowIndex = remarkStartRowIndex + 2
+            for (var item of retVal) {
+
+                sheetContent[`B${startRowIndex}`] = { t: 's', v: item.role }
+                sheetContent[`F${startRowIndex}`] = { t: 's', v: item.name }
+                sheetContent[`S${startRowIndex}`] = { t: 's', v: '部門/支部:' }
+                sheetContent[`W${startRowIndex}`] = { t: 's', v: item.deptbranch }
+                sheetContent[`AK${startRowIndex}`] = { t: 's', v: '日期:' }
+                sheetContent[`AL${startRowIndex}`] = { t: 's', v: item.date }
+                sheetContent[`B${startRowIndex + 1}`] = { t: 's', v: '備註:' }
+                sheetContent[`F${startRowIndex + 1}`] = { t: 's', v: item.remarks }
+
+                startRowIndex += 3
+            }
+
+        }
+
+        const addRe = (request, role) => {
+            return addRemarks(role, request["_clp_responsibleperson_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_responsibleperson_value,
+                request["clp_requestdate@OData.Community.Display.V1.FormattedValue"],
+                request.clp_remarks || ''
+            )
+        }
+
+        const addApprover = (request, role) => {
+            return addRemarks(role, request["_clp_approver_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_approver_value,
+                request["clp_appr_date@OData.Community.Display.V1.FormattedValue"],
+                request.clp_appr_remarks || ''
+            )
+        }
+        const addReview = (request) => {
+            return addRemarks('覆核人',
+                request["_clp_reviewer_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_reviewer_value,
+                request["clp_reviewed_date@OData.Community.Display.V1.FormattedValue"],
+                request.clp_reviewer_remarks
+            )
+        }
+
+        const addmm = (request) => {
+            return addRemarks('首席土木經理',
+                request["_clp_mm_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_mm_value,
+                request["clp_mm_date@OData.Community.Display.V1.FormattedValue"],
+                request.clp_mm_remarks
+            )
+        }
+
+        const addAdmin = (request) => {
+            return addRemarks('行政處',
+                request["_clp_admin_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_admin_value,
+                request["clp_card_allocation_date@OData.Community.Display.V1.FormattedValue"],
+                request.clp_admin_remarks
+            )
+        }
+
+        const addSecurity = (request) => {
+            return addRemarks('保安部',
+                request["_clp_security_value@OData.Community.Display.V1.FormattedValue"],
+                request._clp_security_value,
+                request["clp_card_encoding_date@OData.Community.Display.V1.FormattedValue"],
+                request.clp_security_remarks
+            )
+        }
+
+
+        const addRemarks = async (role, approver, userid, date, remarks) => {
+            if (userid) {
+                var deptbranch = await ShareSdk.getDeptBranchAsync(userid)
+                let log = { "role": role, "name": approver, "deptbranch": deptbranch || '', "date": date || '--', "remarks": remarks };
+                return log
+            }
+            return null
+
+        }
+
+
+
+
+        const cancel = () => {
+            window.close()
+        }
+
+
+        function App() {
+
+            const [message, setMessage] = React.useState('')
+
+            React.useEffect(() => {
+
+                const applitionNo = getUrlParameter('applitionNo')
+
+                const msg = `Request ${applitionNo} is added successfully.  Would you like to export the Request Form now?`
+                setMessage(msg)
+            }, []);
+
+            return (
+                <div class="content">
+                    <div class="imgcontainer">
+                        <label class="successful">{message}</label>
+                    </div>
+                    <div class="bottom">
+                        <button type="button" onClick={exportFile} >Export</button>
+                        <button type="button" onClick={cancel}>Cancel</button>
+                    </div>
+                </div>
+            )
+
+        }
+        ReactDOM.render(<App />, document.getElementById('content'));
+
+
+
+    </script>
+</body>
+
+</html>
