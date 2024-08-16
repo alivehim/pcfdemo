@@ -1,0 +1,15 @@
+ {
+    SSMS_PC_CARDS:[{ 
+    "SSMS_PC_CARD": [
+        {
+            "CARD_NO": "NR00001",
+            "CARD_TYPE": "C",
+            "CARD_STATUS": "AVE",
+            "ISSUE_DEPT":"WE",
+            "EXPIRY_DATE":"2023-1-1",
+            "CARD_EXPIRY_DATE":"2023-1-1",
+            "REPLACE_CARD_NO":"NR00002"
+          
+        }
+    ]}]
+}
