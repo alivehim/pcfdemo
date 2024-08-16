@@ -1,0 +1,1045 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow</title>
+    <style>
+        .indicator-block:last-child .indicator-line {
+            display: none;
+        }
+
+        td {
+            overflow: hidden;
+        }
+
+        #logsColTable>div:last-child {
+            border: none;
+        }
+    </style>
+    <!--<link rel="stylesheet" href="eaa_workflow.css">-->
+    <link rel="stylesheet" href="aia_eaa_workflow.css">
+
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+</head>
+
+<body class="h-max w-full flex flex-col overflow-auto bg-red-100 text-gray p-10" onfocusout="parent.setEmailRange();"
+    style="overflow-wrap: break-word;">
+    <div class="flex-1 flex flex-col">
+        <div class="w-full overflow-auto mb-5 pb-2 hidden sm:block">
+            <div class="w-full min-w-max">
+                <div id="timelineIndicatorContainer" class="grid w-full"></div>
+                <div id="timelineBlockContainer" class="grid w-full min-w-max gap-5"></div>
+            </div>
+        </div>
+
+        <div id="timelineColContainer" class="w-full flex flex-col my-5 sm:hidden"></div>
+
+        <div class="bg-white rounded p-5 mb-8">
+            <div class="w-full overflow-auto">
+                <table id="logsTable" class="table-fixed text-xs text-left min-w-full hidden sm:table">
+                    <thead>
+                        <tr>
+                            <th class="text-nc70 font-semibold min-w-[8rem] pr-5 border-b border-light-gray py-3">
+                                User <i></i>
+                            </th>
+                            <th class="text-nc70 font-semibold min-w-[8rem] pr-5 border-b border-light-gray py-3">
+                                On Behalf?</th>
+                            <th class="text-nc70 font-semibold min-w-[8rem] pr-5 border-b border-light-gray py-3">
+                                Approval Evidence</th>
+                            <th class="text-nc70 font-semibold min-w-[8rem] pr-5 border-b border-light-gray py-3">
+                                Workflow Current Stage</th>
+                            <th class="text-nc70 font-semibold min-w-[8rem] pr-5 border-b border-light-gray py-3">
+                                Action</th>
+                            <th
+                                class="text-nc70 whitespace-normal font-semibold min-w-[16rem] pr-5 border-b border-light-gray py-3">
+                                Date</th>
+
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <div id="logsColTable" class="flex flex-col sm:hidden"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        window.Xrm = window.parent.Xrm
+
+        // List of approver roles
+        var approverRole = {
+            LocalApprover: "Local Approver",
+            GroupFinanceCoordinator: "Group Finance Coordinator",
+            HeadGroupTax: "Head of Group Tax",
+            RegionalCFO: "Regional CFO"
+        }
+
+        var Stages = {
+            LocalApprover: 589450001,
+            GroupFinanceCoordinator: 589450003,
+            RegionalCFO: 589450005,
+            HeadGroupTax: 589450006,
+        }
+
+        // List of form types
+        var FormType = {
+            PwCTax: 589450000,
+            PwCNonTax: 589450001,
+            NonPwCTax: 589450002
+        }
+
+        /**
+      * Choices form status
+      */
+        var _statusType = {
+            new: 589450000,
+            PendingLocalApproverApproval: 589450001,
+            PendingGroupFinanceCoordinatorApproval: 589450002,
+            PendingHeadOfGroupTaxApproval: 589450004,
+            PendingRegionalCFOApproval: 589450005,
+            PendingRequesterChange: 589450006,
+            LocalApproverRejected: 589450008,
+            GroupFinanceCoordinatorRejected: 589450009,
+            HeadOfGroupTaxRejected: 589450011,
+            RegionalCFORejected: 589450012,
+            ActualFeeUpdatePending: 589450013,
+            ActualFeeUpdateCompleted: 589450014,
+            Unpublished: 589460001
+        }
+
+        const _stages = {
+            Initiator: 589450000,
+            LocalApprover: 589450001,
+            GroupFinanceCoordinator: 589450003,
+            RegionalCFO: 589450005,
+            HeadofGroupTax: 589450006,
+            ActualFeeUpdate: 589450007,
+        }
+
+        const _approvalStatus = {
+            Approved: 589450000,
+            Rejected: 589450001,
+            Completed: 589450002,
+            Pending: 589450003,
+            ResubmissionPending: 589450004,
+        }
+
+        // Get current form Title
+        const varformtitle = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_name").getValue();
+
+        // Get current form id
+        const varformid = window.parent.Xrm.Page.data.entity.getId().replace(/[{}]*/g, "");
+
+        // Get current form type
+        const varformtype = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_sys_form_type").getValue();
+
+        var localapprover;
+
+        // Get current local approver if current form is not NonPwCTax
+        if (varformtype != FormType.NonPwCTax) {
+            localapprover = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_local_approver").getValue()[0].name;
+        }
+
+        var dataGFC = [];
+        var dataHGT = [];
+        var dataRCFO = [];
+
+        const queryhgt = `<fetch mapping='logical'>
+        <entity name='team'>
+        <link-entity name='aia_eaa_team_role' from='aia_eaa_team' to='teamid'>
+        <filter type='and'>
+        <condition attribute='aia_eaa_stage' operator='eq' value='589450006'/>
+        </filter>
+        </link-entity>
+        <link-entity name='teammembership' from='teamid' to='teamid'>
+        <link-entity name='systemuser' from='systemuserid' to='systemuserid'>
+        <attribute name='fullname'/>
+        </link-entity>
+        </link-entity>
+        </entity>
+        </fetch>`
+
+        const queryrcfo = `<fetch mapping='logical'>
+        <entity name='team'>
+        <link-entity name='aia_eaa_team_role' from='aia_eaa_team' to='teamid'>
+        <filter type='and'>
+        <condition attribute='aia_eaa_stage' operator='eq' value='589450005'/>
+        </filter>
+        </link-entity>
+        <link-entity name='teammembership' from='teamid' to='teamid'>
+        <link-entity name='systemuser' from='systemuserid' to='systemuserid'>
+        <attribute name='fullname'/>
+        </link-entity>
+        </link-entity>
+        </entity>
+        </fetch>`
+
+        const querygfc = `<fetch mapping='logical'>
+        <entity name='team'>
+        <link-entity name='aia_eaa_team_role' from='aia_eaa_team' to='teamid'>
+        <filter type='and'>
+        <condition attribute='aia_eaa_stage' operator='eq' value='589450003'/>
+        </filter>
+        </link-entity>
+        <link-entity name='teammembership' from='teamid' to='teamid'>
+        <link-entity name='systemuser' from='systemuserid' to='systemuserid'>
+        <attribute name='fullname'/>
+        </link-entity>
+        </link-entity>
+        </entity>
+        </fetch>`
+
+
+        const getHGT = async () => {
+            const data = await fetch(
+                `/api/data/v9.0/teams?fetchXml=${encodeURI(queryhgt)}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                return res.value
+            })
+            return data
+        }
+
+        const getRCFO = async () => {
+            const data = await fetch(
+                `/api/data/v9.0/teams?fetchXml=${encodeURI(queryrcfo)}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                return res.value
+            })
+            return data
+        }
+
+        const getGFC = async () => {
+            const data = await fetch(
+                `/api/data/v9.0/teams?fetchXml=${encodeURI(querygfc)}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                return res.value
+            })
+            return data
+        }
+
+        const queryotherapprovers = `<fetch mapping='logical'>
+                                    <entity name='team'>
+                                    <link-entity name='aia_eaa_team_role' from='aia_eaa_team' to='teamid'>
+                                    <filter type='or'>
+                                    <condition attribute='aia_eaa_stage' operator='eq' value='589450003'/>
+                                    <condition attribute='aia_eaa_stage' operator='eq' value='589450005'/>
+                                    <condition attribute='aia_eaa_stage' operator='eq' value='589450006'/>
+                                    </filter>
+                                    </link-entity>
+                                    <link-entity name='teammembership' from='teamid' to='teamid'>
+                                    <link-entity name='systemuser' from='systemuserid' to='systemuserid'>
+                                    <attribute name='fullname'/>
+                                    </link-entity>
+                                    </link-entity>
+                                    </entity>
+                                    </fetch>`
+
+
+        const getotherApprovers = async () => {
+
+            const data = await fetch(
+                `/api/data/v9.0/teams?fetchXml=${encodeURI(queryotherapprovers)}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                return res.value
+            })
+            return data
+        }
+
+
+        const isReturn2Reqeustor = (reqeustStatus, logsData) => {
+
+            if (reqeustStatus == _statusType.Unpublished) {
+                if (logsData.length >= 2 && logsData[1].aia_action_name === 'Pending Resubmission') {
+                    return true;
+                }
+            }
+
+            return reqeustStatus == _statusType.PendingRequesterChange;
+        }
+
+        const isPendingClosed = (reqeustStatus) => {
+            return reqeustStatus == _statusType.ActualFeeUpdatePending;
+        }
+
+        const isPendingAfterReopen = (reqeustStatus) => {
+            if (reqeustStatus == _statusType.PendingLocalApproverApproval) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingGroupFinanceCoordinatorApproval) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingHeadOfGroupTaxApproval) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingRegionalCFOApproval) {
+                return true;
+            }
+            return false;
+        }
+
+        const isPending = (reqeustStatus, role, logsData) => {
+            if (reqeustStatus == _statusType.PendingLocalApproverApproval && role == approverRole.LocalApprover) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingGroupFinanceCoordinatorApproval && role == approverRole.GroupFinanceCoordinator) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingHeadOfGroupTaxApproval && role == approverRole.HeadGroupTax) {
+                return true;
+            }
+            else if (reqeustStatus == _statusType.PendingRegionalCFOApproval && role == approverRole.RegionalCFO) {
+                return true;
+            }
+            //mark here 
+            else if (reqeustStatus == _statusType.Unpublished) {
+                var item = logsData[0]
+                var currentStatus = item["aia_workflow_current_stage"].split(" ")
+                currentStatus.pop()
+                currentStatus = currentStatus.join(" ")
+                var previousAction = logsData[1].aia_action_name
+
+                if (previousAction != 'Rejected') {
+                    if (currentStatus === approverRole.LocalApprover && role === approverRole.LocalApprover) {
+                        return true
+                    }
+                    else if (currentStatus === approverRole.GroupFinanceCoordinator && role === approverRole.GroupFinanceCoordinator) {
+
+                        return true
+                    }
+                    else if (currentStatus === approverRole.HeadGroupTax && role === approverRole.HeadGroupTax) {
+
+                        return true
+                    }
+                    else if (currentStatus === approverRole.RegionalCFO && role === approverRole.RegionalCFO) {
+
+                        return true
+                    }
+                }
+
+
+                return false
+            }
+
+            /*else if (reqeustStatus == _statusType.ActualFeeUpdatePending ) {
+                 return true;
+             }*/
+            return false;
+        }
+
+        const getTimelineStatus = (reqeustStatus, approveStatus, role, logsData) => {
+
+            if (isReturn2Reqeustor(reqeustStatus, logsData)) {
+                return "Pending";
+            }
+
+            if (approveStatus != undefined) {
+
+                if (isPending(reqeustStatus, role, logsData)) {
+                    return "Pending"
+                }
+
+                actionResult = approveStatus//getActionType(approveStatus)
+
+                if (actionResult == "Pending" || actionResult == "Reopened") {
+                    return "";
+                }
+
+                return actionResult;
+
+            } else {
+                if (isPending(reqeustStatus, role, logsData)) {
+                    return "Pending"
+                }
+                else {
+                    return ""
+                }
+            }
+
+        }
+
+
+
+        const getApprover = (item) => {
+            let actionByUserName = "";
+            if (item === approverRole.PendingRequesterChange) {
+                actionByUserName = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_requester").getValue()?.[0].name
+            }
+            else if (item === approverRole.LocalApprover) {
+                actionByUserName = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_local_approver").getValue()?.[0].name
+            }
+            else if (item === approverRole.GroupFinanceCoordinator) {
+                //var data = await getGFC();
+                actionByUserName = dataGFC.length == 1 ? dataGFC[0]["systemuser3.fullname"] : approverRole.GroupFinanceCoordinator//window.parent.Xrm.Page.data.entity.attributes.getByName("aia_sys_lbuowner").getValue()?.[0].name
+            }
+            else if (item === approverRole.HeadGroupTax) {
+                //var data = await getHGT();
+                actionByUserName = dataHGT.length == 1 ? dataHGT[0]["systemuser3.fullname"] : approverRole.HeadGroupTax//window.parent.Xrm.Page.data.entity.attributes.getByName("aia_sys_lbuowner").getValue()?.[0].name
+            }
+            else if (item === approverRole.RegionalCFO) {
+                //var data = await getRCFO();
+                actionByUserName = dataRCFO.length == 1 ? dataRCFO[0]["systemuser3.fullname"] : approverRole.RegionalCFO//window.parent.Xrm.Page.data.entity.attributes.getByName("aia_sys_lbuowner").getValue()?.[0].name
+            }
+
+            return actionByUserName
+        }
+
+        const getLatestSubmission = (requestGuid) => {
+            return fetch(`/api/data/v9.0/aia_eaa_timelines?$filter=_aia_sys_eaa_form_value eq '${requestGuid}' and aia_action_name eq 'Submitted' &$orderby=createdon desc`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Prefer': 'odata.include-annotations="*"',
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                form = res.value[0];
+
+                return Promise.resolve({
+                    name: form["aia_action_by"],
+                    time: form["createdon@OData.Community.Display.V1.FormattedValue"]
+                })
+            }).catch(err => {
+                console.error(err)
+                throw err;
+            })
+        }
+
+        const requestApproverProcess = async (logsData, approvers) => {
+
+            var result = [];
+            var sequences = [];
+            var requestStatus = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_form_status").getValue();
+
+            var replaceSymbol = /(\w*){(.*)}(.*)/g
+            var formId = window.parent.Xrm.Page.data.entity.getId().replace(replaceSymbol, "$1$2");
+
+            var log = logsData[logsData.length - 1];
+            var submission = await getLatestSubmission(formId)
+            var isRequestReturned = isReturn2Reqeustor(requestStatus, logsData)
+            if (logsData.length > 0) {
+
+                var isSummbited = logsData.filter(p => p.aia_action_name == 'Submitted').length > 0;
+                result.push(
+                    {
+                        "actionBy": submission.name,//log.aia_action_by,
+                        // "actionOn": isReturn2Reqeustor(requestStatus, logsData) ? "" : logsData.filter(p => p.aia_action_name == 'Submitted').length > 0 ? logsData.filter(p => p.aia_action_name == 'Submitted')[0]["createdon@OData.Community.Display.V1.FormattedValue"] : "--",
+                        "actionOn": submission.time,
+                        "actionType": "Submission",
+                        "onBehalf": logsData.filter(p => p.aia_action_name == 'Submitted').length > 0 ? logsData.filter(p => p.aia_action_name == 'Submitted')[0]["aia_on_behalf"] : "No",
+                        "role": "Requester",
+                        "sequence": 1,
+                        "status": isRequestReturned ? "Reopened" : (isSummbited ? "Submitted" : "")
+                    }
+                );
+            }
+            else {
+                result.push(
+                    {
+                        "actionBy": "",
+                        "actionOn": "",
+                        "actionType": "Submission",
+                        "onBehalf": "No",
+                        "role": "Requestor",
+                        "sequence": 1,
+                        "status": "Pending"
+                    }
+                );
+            }
+
+
+            //var actualApprovers = approvers.filter(c => c.aia_actionon != null);
+            if (varformtype == FormType.PwCTax) {
+                var sequences = [approverRole.LocalApprover, approverRole.GroupFinanceCoordinator, approverRole.HeadGroupTax, approverRole.RegionalCFO];
+            } else if (varformtype == FormType.PwCNonTax) {
+                var sequences = [approverRole.LocalApprover, approverRole.GroupFinanceCoordinator, approverRole.RegionalCFO];
+            } else {
+                var sequences = [approverRole.HeadGroupTax];
+            }
+            var isPendingBefore = false
+            const submitDate = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_requester_date").getValue()
+            console.log(submitDate)
+            sequences.forEach((item, index) => {
+
+                var specificApprovers = logsData.filter(c => {
+
+                    let actionOn = new Date(c.aia_action_on)
+                    var remark = c.aia_workflow_current_stage.split(" ");
+                    remark.pop();
+                    remark = remark.join(" ");
+                    if (remark == "Submit") { remark = "Submitted" }
+                    return remark.toLowerCase() === item.toLowerCase() && actionOn > submitDate && c.aia_action_name != 'Unpublished'
+
+                })
+
+                var actualApprovers = specificApprovers.filter(c => c.aia_action_on != null);
+                if (actualApprovers != null && actualApprovers.length > 0 && !isRequestReturned) {
+
+                    var approveStatus = actualApprovers[0]["aia_action_name"];
+                    var status = getTimelineStatus(requestStatus, approveStatus, item, logsData);
+
+
+                    var onhehalf = actualApprovers[0]["aia_on_behalf"]
+
+                    result.push(
+                        {
+                            "actionBy": onhehalf ? getApprover(item) : actualApprovers[0]["aia_action_by"],
+                            "actionOn": isPending(requestStatus, item, logsData) ? " " : actualApprovers[0]["aia_action_name"] == "Resubmission Pending" ? " " : isPendingBefore ? " " : actualApprovers[0]["createdon@OData.Community.Display.V1.FormattedValue"],
+                            "actionType": "Pending",
+                            "onBehalf": actualApprovers[0]["aia_on_behalf"],
+                            "role": item,
+                            "sequence": index + 2,
+                            "status": isPendingBefore ? "" : getTimelineStatus(requestStatus, approveStatus, item, logsData),
+                            "actualApprover": actualApprovers[0]["aia_action_by"]
+                        }
+                    )
+
+                    //ensure there is only one step in pending status
+                    if (status == "Pending" && isPendingBefore == false) {
+                        isPendingBefore = true;
+                    }
+
+                } else {
+
+                    let actionByUserName = getApprover(item)
+
+                    result.push(
+                        {
+                            "actionBy": actionByUserName,
+                            "actionOn": isRequestReturned ? '' : (!!actualApprovers[0] ? actualApprovers[0]["createdon@OData.Community.Display.V1.FormattedValue"] ?? "" : ""),
+                            "actionType": "Pending",
+                            "onBehalf": false,
+                            "role": item,
+                            "sequence": index + 2,
+                            "status": isPending(requestStatus, item, logsData) ? "Pending" : ""
+                        }
+                    )
+
+                }
+
+
+            });
+
+            var logsData1 = logsData.filter(c => c.aia_workflow_current_stage == "Actual Fee Update Completed");
+
+            if (logsData1.length > 0) {
+                result.push(
+                    {
+                        "actionBy": logsData1[0]["aia_action_by"],
+                        "actionOn": logsData1[0]["aia_action_on@OData.Community.Display.V1.FormattedValue"],
+                        "actionType": "Close",
+                        "role": "Actual Fee Update",
+                        "sequence": varformtype == FormType.PwCTax ? 6 : varformtype == FormType.PwCNonTax ? 5 : 3,
+                        "status": "Close"
+                    }
+                );
+
+            } else {
+                result.push(
+                    {
+                        "actionBy": "--",
+                        "actionOn": "",
+                        "actionType": "Close",
+                        "role": "Actual Fee Update",
+                        "sequence": varformtype == FormType.PwCTax ? 6 : varformtype == FormType.PwCNonTax ? 5 : 3,
+                        "status": isPendingClosed(requestStatus) ? "Pending" : ""
+                    }
+                );
+            }
+
+
+            //modify "LBU Owner" role to "LBU Department Owner"
+            if (varformtype == FormType.NonPwCTax) {
+                result[1]["role"] = "Head of Group Tax";
+            } else {
+                result[1]["role"] = "Local approver";
+            }
+            return result;
+
+        }
+
+        const getActionType = (approveStatus) => {
+            if (approveStatus.indexOf('Approved') != -1) {
+                return 'Approved';
+            }
+            else if (approveStatus.indexOf('Rejected') != -1) {
+                return 'Rejected';
+            }
+            else if (approveStatus.indexOf('Reopened')) {
+                return 'Reopened';
+            }
+            else if (approveStatus.indexOf('Pending')) {
+                return 'Pending';
+            }
+            else
+                return '';
+
+        }
+
+        const getUserOnBehalf = async () => {
+
+            const data = await fetch(
+                `/api/data/v9.0/aia_eaa_forms/?$filter=aia_eaa_formid eq ${varformid}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                // return res.value[0]._aia_eaa_on_behalf_rcfo_value
+                return res.value[0]["_aia_eaa_on_behalf_rcfo_value@OData.Community.Display.V1.FormattedValue"]
+            })
+            return data
+
+        }
+
+        /**
+         * Get Logs data(For render Logs table)
+         */
+        const getLogsData = async (formid) => {
+
+
+            const data = await fetch(
+                `/api/data/v9.0/aia_eaa_timelines/?$orderby=aia_action_on desc&$filter=_aia_sys_eaa_form_value eq ${formid}`,
+                {
+                    headers: {
+                        "prefer": 'odata.include-annotations="*"'
+                    }
+                }
+            ).then(res => res.json()).then(res => {
+                if (res.error) {
+                    throw new Error(res.error.message)
+                }
+
+                return res.value
+            })
+            return data
+
+        }
+
+        /**
+         * Render Timeline
+         */
+        const renderTimeline = async (logsData) => {
+            //const timelineData = getTimelineData()
+            // const logsData = await getLogsData(varformid)
+            // const localapprover = await getlocalapprover();
+            var approvers = [];
+
+            if (varformtype == FormType.NonPwCTax) {
+                var data = await getHGT();
+                for (let index = 0; index < data.length; index++) {
+                    approvers.push(data[index]["systemuser3.fullname"])
+                }
+            } else {
+                approvers.push(localapprover);
+                var otherapprovers = [];
+                var data = await getotherApprovers();
+                for (let index = 0; index < data.length; index++) {
+                    approvers.push(data[index]["systemuser3.fullname"])
+                }
+            }
+
+            var timelineData = await requestApproverProcess(logsData, approvers);
+
+            const timelineBlockContainer = document.getElementById("timelineBlockContainer")
+            const timelineIndicatorContainer = document.getElementById("timelineIndicatorContainer")
+            const timelineColContainer = document.getElementById("timelineColContainer")
+            timelineColContainer.innerHTML = ""
+            timelineBlockContainer.innerHTML = ""
+            timelineIndicatorContainer.innerHTML = ""
+            timelineBlockContainer.style["grid-template-columns"] = `repeat(${timelineData.length}, minmax(0, 1fr))`
+            timelineIndicatorContainer.style["grid-template-columns"] = `repeat(${timelineData.length}, minmax(0, 1fr))`
+
+
+            const getBKColor = (item) => {
+
+                if (item.actionType != 'Close') {
+                    if (["Submitted", "Create", "Approved", "Close"].includes(item.status)) {
+                        return "bg-green";
+                    }
+                    else if (["Pending", "Reopened"].includes(item.status)) {
+                        return "bg-blue";
+                    }
+                    else if (item.status === "Rejected") {
+                        return "bg-red";
+                    } else {
+                        return "bg-light-gray";
+                    }
+                }
+                else {
+                    var stage = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_stage").getValue()
+                    var approvalStatus = window.parent.Xrm.Page.data.entity.attributes.getByName("aia_eaa_approval_status").getValue()
+                    if (stage === _stages.ActualFeeUpdate && approvalStatus === _approvalStatus.Pending) {
+                        return "bg-blue";
+                    }
+                    else if (["Close"].includes(item.status)) {
+                        return "bg-green";
+                    }
+                    else if (item.status === "Rejected") {
+                        return "bg-red";
+                    } else {
+                        return "bg-light-gray";
+                    }
+                }
+
+            }
+
+
+            for (const item of timelineData) {
+                const indicatorBgColor = getBKColor(item)
+                const indicatorBgColorex = ["Submitted", "Create", "Approved", "Close"].includes(item.status) ? "bg-green" : "bg-light-gray"
+                const indicatorTextColor = ["Submitted", "Approved", "Close"].includes(item.status) ? "text-black" : "text-nc60"
+
+                // horizontal layout
+                const infoBlock = document.createElement('div')
+                infoBlock.classList.add("h-full")
+                if (item.onBehalf == true) {
+                    var useronbehalf = item.actualApprover;
+
+                    infoBlock.innerHTML = `
+                    <div class="bg-white px-5 py-3 items-center justify-start flex flex-col info-block h-full">
+                        <div class="flex items-center">
+                            <svg class="mb-0.5" width="11" height="13" viewBox="0 0 11 13" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M2.875 3.85379C2.875 2.21802 4.15581 0.916016 5.70655 0.916016C7.25728 0.916016 8.53809 2.21802 8.53809 3.85379C8.53809 5.48956 7.25728 6.79153 5.70655 6.79153C4.15581 6.79153 2.875 5.48956 2.875 3.85379ZM5.70655 0.0410156C3.6464 0.0410156 2 1.76135 2 3.85379C2 5.43355 2.93845 6.80119 4.28489 7.37654C1.95962 7.976 0.25 10.145 0.25 12.7077H1.125C1.125 10.1429 3.13576 8.08723 5.5863 8.08723C8.03683 8.08723 10.0476 10.1429 10.0476 12.7077H10.9226C10.9226 10.1983 9.2834 8.06645 7.03207 7.41599C8.42976 6.86571 9.41309 5.47088 9.41309 3.85379C9.41309 1.76135 7.76669 0.0410156 5.70655 0.0410156Z"
+                                    fill="#333D47" />
+                            </svg>
+                            <p class="text-sm ml-2 text-black">${item.actionBy || "---"}</p>
+                        </div>
+                        <div class="flex items-center">
+                            <p class="text-xs text-nc60" style="margin-right: 5px;">On Behalf by</p>
+                            <svg class="mb-0.5" width="10" height="12" viewBox="0 0 11 13" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M2.875 3.85379C2.875 2.21802 4.15581 0.916016 5.70655 0.916016C7.25728 0.916016 8.53809 2.21802 8.53809 3.85379C8.53809 5.48956 7.25728 6.79153 5.70655 6.79153C4.15581 6.79153 2.875 5.48956 2.875 3.85379ZM5.70655 0.0410156C3.6464 0.0410156 2 1.76135 2 3.85379C2 5.43355 2.93845 6.80119 4.28489 7.37654C1.95962 7.976 0.25 10.145 0.25 12.7077H1.125C1.125 10.1429 3.13576 8.08723 5.5863 8.08723C8.03683 8.08723 10.0476 10.1429 10.0476 12.7077H10.9226C10.9226 10.1983 9.2834 8.06645 7.03207 7.41599C8.42976 6.86571 9.41309 5.47088 9.41309 3.85379C9.41309 1.76135 7.76669 0.0410156 5.70655 0.0410156Z"
+                                    fill="#333D47" />
+                            </svg>
+                            <p class="text-sm ml-2 text-black">${useronbehalf || "---"}</p>
+                        </div>
+                        <p class="whitespace-normal text-xs text-nc60 mt-2">${item.actionOn}</p>
+                    </div>
+                    `
+                } else {
+                    infoBlock.innerHTML = `
+                <div class="bg-white px-5 py-3 items-center justify-start flex flex-col info-block h-full">
+                    <div class="flex items-center">
+                        <svg class="mb-0.5" width="11" height="13" viewBox="0 0 11 13" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M2.875 3.85379C2.875 2.21802 4.15581 0.916016 5.70655 0.916016C7.25728 0.916016 8.53809 2.21802 8.53809 3.85379C8.53809 5.48956 7.25728 6.79153 5.70655 6.79153C4.15581 6.79153 2.875 5.48956 2.875 3.85379ZM5.70655 0.0410156C3.6464 0.0410156 2 1.76135 2 3.85379C2 5.43355 2.93845 6.80119 4.28489 7.37654C1.95962 7.976 0.25 10.145 0.25 12.7077H1.125C1.125 10.1429 3.13576 8.08723 5.5863 8.08723C8.03683 8.08723 10.0476 10.1429 10.0476 12.7077H10.9226C10.9226 10.1983 9.2834 8.06645 7.03207 7.41599C8.42976 6.86571 9.41309 5.47088 9.41309 3.85379C9.41309 1.76135 7.76669 0.0410156 5.70655 0.0410156Z"
+                                fill="#333D47" />
+                        </svg>
+                        <p class="text-sm ml-2 text-black">${item.actionBy || "---"}</p>
+                    </div>
+                    <p class="whitespace-normal text-xs text-nc60 mt-2">${item.actionOn}</p>
+                </div>
+                `
+                }
+
+                timelineBlockContainer.appendChild(infoBlock)
+
+                const indicator = document.createElement('div')
+                indicator.classList.add("w-full", "indicator-block")
+                indicator.innerHTML = `
+                <p class="text-center mb-2 ${indicatorTextColor} font-bold text-xs">${item.role}</p>
+                <div class="h-8 w-full mb-2 relative">
+                    <div
+                        class="z-10 absolute left-1/2 top-0 -translate-x-1/2 rounded-full w-8 h-8 flex items-center justify-center text-white ${indicatorBgColor}">
+                        ${item.sequence}</div>
+                    <div class="absolute w-full left-1/2 top-1/2 -translate-y-1/2 h-1 ${indicatorBgColorex} indicator-line"></div>
+                </div>
+                `
+                timelineIndicatorContainer.appendChild(indicator)
+
+                // vertical layout
+                const colBlock = document.createElement("div")
+                colBlock.classList.add("flex", "flex-col", "relative", "indicator-block")
+                colBlock.innerHTML = `
+                <div class="absolute h-full w-1 ${indicatorBgColor} indicator-line"></div>
+                <div class="flex items-center -translate-x-3.5">
+                    <div class="rounded-full w-8 h-8 ${indicatorBgColor} text-white flex items-center justify-center">${item.sequence}</div>
+                    <h2 class="ml-5 font-bold ${indicatorTextColor}">${item.role}</h2>
+                </div>
+                <div class="ml-5 my-2 px-5 py-4 bg-white">
+                    <div class="flex items-center">
+                        <svg class="mb-0.5" width="11" height="13" viewBox="0 0 11 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M2.875 3.85379C2.875 2.21802 4.15581 0.916016 5.70655 0.916016C7.25728 0.916016 8.53809 2.21802 8.53809 3.85379C8.53809 5.48956 7.25728 6.79153 5.70655 6.79153C4.15581 6.79153 2.875 5.48956 2.875 3.85379ZM5.70655 0.0410156C3.6464 0.0410156 2 1.76135 2 3.85379C2 5.43355 2.93845 6.80119 4.28489 7.37654C1.95962 7.976 0.25 10.145 0.25 12.7077H1.125C1.125 10.1429 3.13576 8.08723 5.5863 8.08723C8.03683 8.08723 10.0476 10.1429 10.0476 12.7077H10.9226C10.9226 10.1983 9.2834 8.06645 7.03207 7.41599C8.42976 6.86571 9.41309 5.47088 9.41309 3.85379C9.41309 1.76135 7.76669 0.0410156 5.70655 0.0410156Z"
+                                fill="#333D47" />
+                        </svg>
+                        <p class="text-sm ml-2 text-black">${item.actionBy || "---"}</p>
+                    </div>
+                    <p class="whitespace-normal text-xs text-nc60 mt-2">${item.actionOn}</p>
+                </div>
+                `
+                timelineColContainer.appendChild(colBlock)
+            }
+        }
+
+        const getRequestForm = async () => {
+            return new Promise((resolve, reject) => {
+                var id = window.parent.Xrm.Page.data.entity.getId().replace(/[{}]*/g, "");
+
+                window.parent.Xrm.WebApi.retrieveRecord("aia_eaa_form", id).then(
+                    function success(result) {
+                        return resolve(result);
+                    },
+                    function (error) {
+                        console.log(error.message);
+                        return reject()
+                    });
+            });
+        }
+
+        const renderLogs = async (logsData) => {
+
+            var requestForm = await getRequestForm();
+
+            /*logsData.push({
+                "aia_formstatus": "New",
+                "aia_actionby": requestForm["aia_eaa_requester@OData.Community.Display.V1.FormattedValue"],
+                "createdon@OData.Community.Display.V1.FormattedValue": requestForm["createdon@OData.Community.Display.V1.FormattedValue"],
+                "aia_actionname": "Create",
+                "aia_details": "",
+                "aia_name": "[Requestor]"
+            });*/
+
+            const logsTableBody = document.querySelector("#logsTable tbody")
+            logsTableBody.innerHTML = ""
+
+            const logsColTable = document.getElementById("logsColTable")
+            logsColTable.innerHTML = ""
+
+
+            if (logsData.length === 0) {
+                const emptyMsg = "No Logs Data."
+                const bodyEmptyMsg = document.createElement("tr")
+                bodyEmptyMsg.innerHTML = `
+                    <td colspan="5" class="text-center py-6 text-light-gray font-semibold">${emptyMsg}</td>
+                `
+                logsTableBody.appendChild(bodyEmptyMsg)
+
+                const colEmptyMsg = document.createElement("div")
+                colEmptyMsg.innerHTML = `
+                <p class="text-center py-6 text-light-gray font-semibold">${emptyMsg}</p>
+                `
+                logsColTable.appendChild(colEmptyMsg)
+
+                return
+            }
+
+            //var roleReg = /\[(?<key>.*?)\]/
+            for (const item of logsData) {
+                let statusColor = ""
+                switch (item.aia_action_name) {
+                    case "Completed":
+                        statusColor = "text-status-green";
+                        break;
+                    case "Approved":
+                        statusColor = "text-status-green";
+                        break;
+                    case "Resubmission Pending":
+                        statusColor = "text-status-orange";
+                        break;
+                    case "Pending":
+                        statusColor = "text-status-blue";
+                        break;
+                    case "Rejected":
+                        statusColor = 'text-status-red';
+                        break;
+                }
+
+                const tr = document.createElement("tr")
+                /*var role = '';
+                try {
+                    var role = roleReg.exec(item["aia_name"])[1].trim();
+                }
+                catch {
+                    role = ''
+                }*/
+
+                var currentStatus = item["aia_workflow_current_stage"].split(" ");
+                currentStatus.pop();
+
+                currentStatus = currentStatus.join(" ");
+                currentStatus = currentStatus || "---"
+                currentStatus = currentStatus.indexOf('Unpublished') == -1 ? currentStatus : "--"
+                let action = item["aia_workflow_status"] || "--"
+                if (action === 'Pending Resubmission') {
+                    action = 'Send Back'
+                }
+
+                if (item["aia_on_behalf"] == true) {
+                    evidenceRow = `<td class="break-all py-3 evidence" style="color: blue;" onclick="getAttachment('${item["aia_eaa_timelineid"]}')">View</td>`
+                } else {
+                    evidenceRow = `<td class="break-all py-3" style="color: blue;" >--</td>`
+                }
+                tr.innerHTML = `
+                    <td class="break-all py-3">${item["aia_action_by"] || "---"}</td>
+                    <td class="break-all py-3">${item["aia_on_behalf"] == true ? 'Yes' : 'No'}</td>
+                    ${evidenceRow}
+                    <td class="break-all py-3">${currentStatus}</td>
+                    <td class="py-3 break-words">${action} </td>
+                    <td class="py-3 break-words">${item["createdon@OData.Community.Display.V1.FormattedValue"] || "---"}</td>
+                    `
+
+                logsTableBody.appendChild(tr)
+
+
+                const colDiv = document.createElement("div")
+                colDiv.classList.add("flex", "flex-col", "py-3", "border-b", "border-light-gray")
+                colDiv.innerHTML = `
+                <div class='flex items-center flex-wrap'>
+                    <svg class="mb-0.5" width="11" height="13" viewBox="0 0 11 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M2.875 3.85379C2.875 2.21802 4.15581 0.916016 5.70655 0.916016C7.25728 0.916016 8.53809 2.21802 8.53809 3.85379C8.53809 5.48956 7.25728 6.79153 5.70655 6.79153C4.15581 6.79153 2.875 5.48956 2.875 3.85379ZM5.70655 0.0410156C3.6464 0.0410156 2 1.76135 2 3.85379C2 5.43355 2.93845 6.80119 4.28489 7.37654C1.95962 7.976 0.25 10.145 0.25 12.7077H1.125C1.125 10.1429 3.13576 8.08723 5.5863 8.08723C8.03683 8.08723 10.0476 10.1429 10.0476 12.7077H10.9226C10.9226 10.1983 9.2834 8.06645 7.03207 7.41599C8.42976 6.86571 9.41309 5.47088 9.41309 3.85379C9.41309 1.76135 7.76669 0.0410156 5.70655 0.0410156Z"
+                            fill="#333D47" />
+                    </svg>
+                    <p class='ml-2 font-bold'>${item["_createdby_value@OData.Community.Display.V1.FormattedValue"]}</p>
+                    <p class='ml-5'>${item["aia_actionname"]}</p>
+                    <p class='ml-5 opacity-50'>${item["createdon@OData.Community.Display.V1.FormattedValue"]}</p>
+                </div>
+                <p class='mb-2 font-semibold ${statusColor}'>${item["aia_formstatus"] || "---"}</p>
+                <p class='break-words'>${item['aia_details'] || "---"}</p>
+                `
+                logsColTable.appendChild(colDiv)
+            }
+
+            window.addEventListener('resize', resizeIframe)
+            resizeIframe()
+
+        }
+
+        window.Xrm = window.parent.Xrm
+
+        window.getAttachment = (timelineid) => {
+            window.Xrm.Navigation.navigateTo({
+                pageType: "webresource",
+                webresourceName: "aia_eaa_attachmentlistpopup.html",
+                data: timelineid,
+            }, {
+                target: 2,
+                position: 1,
+                height: { value: 80, unit: "%" },
+                width: { value: 70, unit: "%" },
+                title: "Approval Evidence"
+            })
+
+            // var pageInput = {
+            //     entityName: window.parent.EAAShareSdk.Tables.form,
+            //     pageType: "entityrecord",
+            //     formId: window.parent.EAAShareSdk.Forms.Evidence,
+            //     entityId: varformid
+            // }
+
+            // Xrm.Navigation.navigateTo(pageInput,
+            //     {
+            //         target: 2,
+            //         position: 1,
+            //         height: { value: 80, unit: "%" },
+            //         width: { value: 70, unit: "%" },
+            //         title: "Approve Evidence"
+            //     }).then(function success() {
+
+            //     }, function error() {
+
+            //     })
+        }
+
+        let flag = null;
+        /**
+         * Make sure the height of the iframe containing this html needs to be the same as the current body height to prevent two scrollbars from appearing
+         */
+        const resizeIframe = () => {
+            clearTimeout(flag)
+            flag = setTimeout(() => {
+                const { height: bodyHeight } = document.body.getBoundingClientRect()
+                const iframe = window.parent.document.querySelector("iframe[id='WebResource_workflow']")
+                iframe.style.height = bodyHeight + 'px'
+                iframe.style.flex = 'none'
+                const sectionEle = window.parent.document.querySelector('div[data-id="WebResource_workflow"]')
+                sectionEle.style.minHeight = 'auto'
+            }, 200)
+        }
+
+        window.onload = () => {
+            render();
+            //window.addEventListener('resize', resizeIframe)
+            //resizeIframe()
+        }
+
+        const render = async () => {
+
+            var logsData = await getLogsData(varformid)
+            dataGFC = await getGFC()
+            dataHGT = await getHGT()
+            dataRCFO = await getRCFO()
+            await renderTimeline(logsData)
+            await renderLogs(logsData)
+        }
+    </script>
+
+
+</body>
+
+</html>

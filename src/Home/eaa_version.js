@@ -1,0 +1,1 @@
+window.eaaversion = "V1.0.0"

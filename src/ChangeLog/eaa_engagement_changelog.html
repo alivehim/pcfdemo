@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Log</title>
+
+    <script src="/WebResources/aia_babel.min.js"></script>
+    <script src="/WebResources/aia_excel_utils.js"></script>
+    <style>
+        .box {
+            width: 100%;
+            height: 100px;
+            /* background-Color: rgb(255, 100, 100); */
+        }
+
+        .head {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(255, 255, 100); */
+        }
+
+        .content {
+            margin-Left: 15px;
+            margin-Right: 45px;
+            line-Height: 50px;
+            font-family: "Segoe UI", "Open Sans", sans-serif;
+            font-size: 15pt;
+        }
+
+        .container {
+            /* background-Color: rgb(100, 154, 255); */
+            width: 100%;
+            height: 380px;
+        }
+
+        #combox {
+            width: 100%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+        }
+
+        #shareButton {
+            width: 20%;
+            height: 50px;
+            /* background-Color: rgb(100, 255, 247); */
+            margin-left: 3%;
+        }
+
+        #list {
+            width: 580px;
+            height: 300px;
+            /* background-Color: rgb(188, 255, 100); */
+            overflow-y: auto;
+            margin-Left: 15px;
+        }
+
+        .sub_container {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body id="body" style="overflow-wrap: break-word;">
+
+    <script>
+        const ReactDOM = window.parent.ReactDOM;
+        const React = window.parent.React;
+
+        function getUrlParameter(param) {
+            var queryString = decodeURIComponent(location.search.substring(1).replace('data=', ''));
+
+            var sURLVaiables = queryString.split('&');
+
+            for (var i = 0; i < sURLVaiables.length; i++) {
+                var sParameterName = sURLVaiables[i].split('=');
+
+                if (sParameterName[0] == param) {
+                    return sParameterName[1];
+                }
+            }
+        }
+
+    </script>
+    <script src="/WebResources/aia_fluentui.js"></script>
+    <script type="text/babel">
+        window.Xrm = window.parent.Xrm
+        const Component = () => {
+
+            const onColumnClick = (event, column) => {
+
+                if (!['createdon', 'changedby'].includes(column.key))
+                    return;
+
+                let newColumns = columns.map(x => {
+                    x.isSorted = false
+                    return x
+                });
+
+
+                let isSortedDescending = column.isSortedDescending;
+                let myColumn = newColumns.find(x => x.key === column.key)
+
+                myColumn.isSorted = true;
+                // If we've sorted this column, flip it.
+                if (!!!isSortedDescending) {
+                    myColumn.isSortedDescending = true;
+                }
+                else {
+                    myColumn.isSortedDescending = !isSortedDescending;
+                }
+
+                let newItems = onChange().sort((x, y) => {
+                    return x[column.key].localeCompare(y[column.key]) * (isSortedDescending ? 1 : -1)
+                })
+
+                // console.log(myColumn)
+                setColumns(newColumns)
+                setItems(newItems)
+
+            }
+
+            const [columns, setColumns] = React.useState([
+                { key: 'createdon', name: 'Changed Date', fieldName: 'Changed Date', minWidth: 100, maxWidth: 200, onColumnClick: onColumnClick, isResizable: true },
+                { key: 'changedby', name: 'Changed By', fieldName: 'Changed By', minWidth: 100, maxWidth: 200, onColumnClick: onColumnClick, isResizable: true },
+                { key: 'changedfield', name: 'Changed Field', fieldName: 'Changed Field', minWidth: 100, maxWidth: 200, isResizable: true },
+                { key: 'operation', name: 'Event', fieldName: 'Event', minWidth: 100, maxWidth: 200, isResizable: true },
+                { key: 'newValue', name: 'New Value', fieldName: 'New Value', minWidth: 100, maxWidth: 200, isResizable: true },
+                { key: 'oldValue', name: 'Old Value', fieldName: 'Old Value', minWidth: 100, maxWidth: 200, isResizable: true }])
+
+            const [items, setItems] = React.useState([]);
+            const [auditMap, setAuditMap] = React.useState({});
+            const [changelogMap, setChangeLogMap] = React.useState({});
+
+
+            const theme = FluentUIReact.getTheme();
+            const { palette, semanticColors, fonts } = theme;
+
+            const getData = async (field, sort) => {
+                var formId = getUrlParameter('formId');
+                if (!!!field) {
+                    field = 'createdon'
+                    sort = 'desc'
+                }
+
+                // const submisionDate = await getSubmissionDate(formId)
+
+                let oldestSubmission = await window.parent.EAAShareSdk.getOldestSubmission(formId)
+
+                if (!oldestSubmission) {
+                    return
+                }
+
+                var newSubmissionDate = new Date(oldestSubmission.time)
+
+                var min = newSubmissionDate.getMinutes()
+                newSubmissionDate.setMinutes(min + 5)
+                console.log(newSubmissionDate.toLocaleString())
+
+
+                const auditlist = await fetch(
+                    `/api/data/v9.0/audits?$filter=operation eq 2 and action eq 2 and objecttypecode eq 'aia_eaa_form' and _objectid_value eq '${formId}' and createdon gt '${newSubmissionDate.toISOString()}' &$orderby=${field} ${sort}`
+                ).then(res => res.json())
+
+                if (!auditlist.error && auditlist.value.length > 0) {
+                    auditlist.value.forEach(x => {
+                        auditMap[x.auditid] = x
+                    })
+
+                    var vals = '';
+
+
+                    let userids = new Set()
+                    auditlist.value.forEach(audit => {
+                        userids.add(audit._userid_value)
+                        // vals += `<value>${audit._userid_value}</value>`;
+                    });
+
+                    userids.forEach(userid => {
+                        vals += `<value>${userid}</value>`;
+                    })
+
+                    const userFetchXml = `<fetch mapping='logical'>
+	<entity name='systemuser'>
+		<attribute name='fullname'/>
+		<filter type='and'>
+			<condition attribute='systemuserid' operator='in'>
+                ${vals}
+            </condition>
+		</filter>
+	</entity>
+</fetch>`
+
+                    const userlist = await fetch(
+                        `/api/data/v9.0/systemusers?fetchXml=${encodeURI(userFetchXml)}`
+                    ).then(res => res.json())
+
+                    for (let audit of auditlist.value) {
+                        await fetchAuditDetail(audit.auditid, userlist.value)
+                    }
+                    //auditlist.value.map(audit => fetchAuditDetail(audit.auditid, userlist.value))
+
+                }
+
+            }
+
+            const padTo2Digits = (num) => {
+                return num.toString().padStart(2, '0');
+            }
+
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            /**
+             * "19-OCT-2018 10:30"
+            */
+            const dateFormat = (current_datetime) => {
+                let formatted_date = padTo2Digits(current_datetime.getDate()) + "-"
+                    + months[current_datetime.getMonth()] + "-"
+                    + current_datetime.getFullYear() + " "
+                    + padTo2Digits(current_datetime.getHours()) + ":"
+                    + padTo2Digits(current_datetime.getMinutes())
+                return formatted_date
+            }
+
+            const dateValueFormat = (current_datetime_str) => {
+                if (current_datetime_str != '-') {
+                    var current_datetime = new Date(current_datetime_str)
+                    let formatted_date = padTo2Digits(current_datetime.getDate()) + "-"
+                        + months[current_datetime.getMonth()] + "-"
+                        + current_datetime.getFullYear()
+                    return formatted_date
+                } else {
+                    return '-'
+                }
+
+            }
+
+            const getSubmissionDate = async (requestGuid) => {
+                return await fetch(
+                    `/api/data/v9.0/aia_eaa_forms(${requestGuid})?$select=aia_eaa_requester_date`,
+                ).then(res => res.json()).then(res => {
+
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+
+                    return Promise.resolve(res.aia_eaa_requester_date)
+                })
+            }
+
+            const FieldsMapping = {
+                // "aia_eaa_act_fee": "Actual Base fee",
+                // "aia_eaa_usd_act_fee": "Actual Base fee (USD)",
+                // "aia_eaa_act_taxes": "Indirect Taxes (e.g. VAT/GST, etc.)",
+                // "aia_eaa_act_pocket": "Out-of-pocket expenses",
+                // "aia_eaa_usd_act_pocket": "Out-of-pocket expenses (USD)",
+                // "aia_eaa_act_cost": "Total cost of engagement",
+                // "aia_eaa_usd_act_cost": "Total cost of engagement (USD)",
+                // "aia_eaa_revised_date": "Revised Estimated End Date",
+                // "aia_eaa_completed": "Has this engagement been completed?",
+                // "aia_eaa_usd_rate": "Exchange rate to convert to USD",
+                // "aia_eaa_usd_act_fee": "Base fee (USD)",
+                // "aia_eaa_usd_act_taxes": "Indirect Taxes (e.g. VAT/GST, etc.) (USD)",
+                // "aia_eaa_usd_act_pocket": "Out-of-pocket expenses (USD)",
+                // "aia_eaa_usd_act_cost": "Total cost of engagement (USD)"
+                "aia_eaa_pocket": "Estimated Out of pocket expenses",
+                "aia_eaa_est_start_date": "Estimated Start Date",
+                "aia_eaa_approver_date": "Local Approver Submit Date",
+                "aia_on_behalf_rcfo_submit_date": "On Behalf Regional CFO Submit Date",
+                // "aia_eaa_indrect_taxes_base": "Estimated Indirect Taxes (Base)",
+                "aia_eaa_head_date": "Head of Group Tax Submit Date",
+                "aia_eaa_description_long": "Description of Services (More details) (e.g. proposed scope of work, purpose of engagement, etc.)",
+                "_aia_eaa_sub_cate_tax_value": "State which sub-category of service (Tax)",
+                "aia_eaa_act_currency": "Actual Currency",
+                "aia_requester_name": "Requester Name",
+                "aia_eaa_usd_rate": "Exchange rate to convert to USD",
+                "aia_eaa_requester_date": "Requester Submit Date",
+                "_aia_eaa_entity_sign_value": "Which AIA Entity will sign the engagement letter / statement of work?",
+                "aia_eaa_reason_for_pro_firm": "Reason for professional firm",
+                "aia_eaa_requester": "Requester",
+                // "aia_eaa_pocket_base": "Estimated Out of pocket expenses (Base)",
+                "aia_eaa_fee_other_remarks": "Other remarks about the fee",
+                "_aia_eaa_countries_value": "Countries",
+                "aia_eaa_final_date": "Final Approval Date",
+                "_aia_eaa_entity_fee_value": "Which AIA Entity will bear the fee?",
+                "aia_eaa_workflow_stage": "Workflow Stage",
+                "aia_eaa_indrect_taxes": "Estimated Indirect Taxes",
+                // "aia_eaa_est_cost_base": "Total estimated cost of engagement (Base)",
+                "aia_eaa_service_number": "PwC Authorization for Services (AFS) Number",
+                "aia_eaa_revised_date": "Revised Estimated End Date",
+                "aia_eaa_defined_policy": "Is this a pre-approved service as defined in Appendix A to D of the Policy?",
+                "aia_eaa_sub_cate_pre_approved_svc": "Sub-Category list of pre-approved services",
+                "aia_reason_for_engaging_pwc": "Rationale of engaging PwC",
+                "aia_eaa_sla_reminder": "SLA Reminder",
+                "aia_eaa_fee_basis": "Is the fee on a contingent fee basis?",
+                "aia_eaa_pre_approval_svc_by_ext_auditor": "Pre-Approval Services by the External Auditor",
+                "aia_eaa_form_status": "EAA Form Status",
+                "aia_stage": "Stage",
+                "aia_eaa_local_approver": "Local Approver",
+                "aia_eaa_category": "State which category of service",
+                "aia_eaa_completed": "Engagement completed?",
+                "aia_eaa_why_not_included_audit_fee_template": "State why not Included in the Audit Fee template",
+                "aia_eaa_est_duration": "Estimated duration of engagement",
+                "aia_eaa_approval_status": "Approval Status",
+                "aia_eaa_approval_evidence_head": "Approval Evidence HEAD",
+                "aia_eaa_attachments": "Attachments (optional)",
+                "aia_eaa_name_of_pro": "Name of professional firm",
+                "aia_eaa_fully_budgeted": "Fully budgeted?",
+                "aia_eaa_head": "Head of Group Tax",
+                "aia_eaa_usd_est_indrect_taxes": "Estimated Indirect Taxes (USD)",
+                "aia_eaa_act_taxes": "Actual Indirect Taxes",
+                "aia_eaa_act_fee": "Actual Base fee",
+                "aia_eaa_base_fee": "Estimated Base fee",
+                "aia_eaa_on_behalf_head_submit_date": "On Behalf Head Of Group Tax Submit Date",
+                "aia_reference_createdon": "Reference Number Created On",
+                "aia_eaa_usd_act_pocket": "Actual Out-of-pocket expenses (USD)",
+                "aia_eaa_define_pwc": "Is PwC or member",
+                // "aia_eaa_act_cost_base": "Actual Total cost of engagement (Base)",
+                "aia_eaa_usd_est_cost": "Total estimated cost of engagement (USD)",
+                "aia_eaa_act_cost": "Actual Total cost of engagement",
+                "aia_eaa_state_why_permissible": "State why it should be permissible",
+                "aia_is_migration_data": "Is_Migration_Data",
+                "aia_eaa_usd_act_taxes": "Actual Indirect Taxes (USD)",
+                "aia_eaa_approval_evidence_cfo": "Approval Evidence CFO",
+                "aia_eaa_recurring": "Is this a recurring service?",
+                "aia_eaa_usd_act_cost": "Actual Total cost of engagement (USD)",
+                "aia_eaa_fee_included_audit_fee_template": "Is the fee included in the latest Audit Fee template?",
+                "aia_eaa_policy_read": "Policy read",
+                "aia_eaa_completion_date": "EAA Completion Date",
+                "aia_eaa_quarter": "EAA Quarter",
+                "aia_eaa_cfo_date": "Regional CFO Submit Date",
+                "aia_eaa_unpublish_user": "Unpublished By",
+                "aia_eaa_usd_est_pocket": "Estimated out-of-pocket expenses (USD)",
+                "aia_eaa_description_short": "Description of Services (In one line)",
+                "aia_eaa_cost_arrangement_detail": "Details of cost arrangement (e.g. fixed fee, time-based using agreed rates, etc.)",
+                "aia_eaa_act_pocket": "Actual Out of pocket expenses",
+                // "aia_eaa_act_fee_base": "Actual Base fee (Base)",
+                "aia_eaa_cfo": "Regional CFO",
+                "aia_name": "Reference No.",
+                "aia_eaa_department": "Department",
+                "aia_eaa_usd_act_fee": "Actual Base fee (USD)",
+                // "aia_eaa_base_fee_base": "Estimated Base fee (Base)",
+                "aia_eaa_on_behalf_rcfo": "On Behalf Regional CFO",
+                "aia_eaa_final_approver": "Final Approver",
+                "aia_eaa_est_end_date": "Estimated End Date",
+                "aia_eaa_report_year": "EAA Year",
+                // "aia_eaa_act_pocket_base": "Actual Out of pocket expenses (Base)",
+                "aia_eaa_sub_cate_nontax": "State which sub-category of service (Non-Tax)",
+                "aia_eaa_finance_date": "Group Finance Coordinator Submit Date",
+                // "aia_eaa_act_taxes_base": "Actual Indirect Taxes (Base)",
+                "aia_eaa_finance_manager": "Group Finance Coordinator",
+                "aia_eaa_unpublish_rationale": "Rationale for unpublish",
+                "aia_eaa_usd_est_base_fee": "Estimated Base fee (USD)",
+                "aia_eaa_est_cost": "Total estimated cost of engagement",
+                "aia_eaa_est_usd_rate": "(Estimated)Exchange rate to convert to USD",
+                "aia_eaa_on_behalf_head": "On Behalf Head Of Group Tax",
+                "aia_eaa_unpublish_date": "Unpublished Date",
+                "_transactioncurrencyid_value": "Please choose the currency in which the service provider will issue the invoice later",
+                "_aia_eaa_sub_cate_nontax_value": "State which sub-category of service (Non-Tax)",
+                "_aia_eaa_local_approver_value": "Local Approver"
+
+            }
+
+            const DateField = ['aia_eaa_revised_date', 'aia_eaa_est_end_date', 'aia_eaa_est_start_date']
+            const LookupField = ['_aia_eaa_entity_sign_value',
+                '_aia_eaa_countries_value',
+                '_aia_eaa_entity_fee_value',
+                '_aia_eaa_sub_cate_nontax_value',
+                '_aia_eaa_sub_cate_tax_value',
+                '_aia_eaa_local_approver_value',
+                '_transactioncurrencyid_value']
+            const ChoiceField = ['aia_eaa_quarter', 'aia_eaa_category']
+            const BooleanField = ['aia_eaa_recurring', 'aia_eaa_defined_policy', 'aia_eaa_fully_budgeted',
+                'aia_eaa_fee_basis', 'aia_eaa_fee_included_audit_fee_template', 'aia_eaa_completed']
+
+            const getFormateValue = (value, map) => {
+                let formatVal = '-'
+                for (let field in map) {
+                    if (map[field] === value) {
+                        formatVal = field
+                    }
+                }
+                return formatVal
+            }
+
+            const parseValue = async (field, value) => {
+
+                if (!value) {
+                    if (value != false) {
+                        return '-'
+                    }
+                }
+
+                if (ChoiceField.includes(field)) {
+                    switch (field) {
+                        case 'aia_eaa_quarter':
+                            return getFormateValue(value, window.parent.EAAShareSdk.Quarters)
+                        case 'aia_eaa_category':
+                            return getFormateValue(value, window.parent.EAAShareSdk.Category)
+                    }
+                }
+
+                if (BooleanField.includes(field)) {
+                    if (value) {
+                        return 'Yes'
+                    }
+                    else {
+                        return 'No'
+                    }
+                }
+
+
+                if (DateField.includes(field)) {
+                    return dateValueFormat(value)
+                }
+
+                if (LookupField.includes(field)) {
+                    switch (field) {
+                        case '_aia_eaa_countries_value':
+                            return await getCountryName(value)
+                        case '_aia_eaa_entity_sign_value':
+                        case '_aia_eaa_entity_fee_value':
+                            return await getEntityName(value)
+                        case '_transactioncurrencyid_value':
+                            return await getCurrencyName(value)
+                        case '_aia_eaa_sub_cate_nontax_value':
+                        case '_aia_eaa_sub_cate_tax_value':
+                            return await getSubcategroyName(value)
+                        case '_aia_eaa_local_approver_value':
+                            return await getUserName(value)
+
+                    }
+                }
+                return value
+            }
+
+            const getCountryName = (id) => {
+                return fetch(`/api/data/v9.0/aia_eaa_countries?$filter=aia_eaa_countryid eq '${id}'`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Prefer': 'odata.include-annotations="*"',
+                        }
+                    }
+                ).then(res => res.json()).then(res => {
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+                    return Promise.resolve(res.value[0].aia_name)
+                }).catch(err => {
+                    console.error(err)
+                    throw err;
+                })
+            }
+
+            const getEntityName = (id) => {
+                return fetch(`/api/data/v9.0/aia_eaa_entities?$filter=aia_eaa_entityid eq '${id}'`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Prefer': 'odata.include-annotations="*"',
+                        }
+                    }
+                ).then(res => res.json()).then(res => {
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+                    return Promise.resolve(res.value[0].aia_name)
+                }).catch(err => {
+                    console.error(err)
+                    throw err;
+                })
+            }
+
+            const getUserName = (id) => {
+                return fetch(`/api/data/v9.0/systemusers?$filter=systemuserid eq '${id}'`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Prefer': 'odata.include-annotations="*"',
+                        }
+                    }
+                ).then(res => res.json()).then(res => {
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+                    return Promise.resolve(res.value[0].fullname)
+                }).catch(err => {
+                    console.error(err)
+                    throw err;
+                })
+            }
+
+            const getCurrencyName = (id) => {
+                return fetch(`/api/data/v9.0/transactioncurrencies?$filter=transactioncurrencyid eq '${id}'`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Prefer': 'odata.include-annotations="*"',
+                        }
+                    }
+                ).then(res => res.json()).then(res => {
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+                    return Promise.resolve(res.value[0].isocurrencycode)
+                }).catch(err => {
+                    console.error(err)
+                    throw err;
+                })
+            }
+
+            const getSubcategroyName = (id) => {
+                return fetch(`/api/data/v9.0/aia_eaa_subcategories?$filter=aia_eaa_subcategoryid eq '${id}'`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Prefer': 'odata.include-annotations="*"',
+                        }
+                    }
+                ).then(res => res.json()).then(res => {
+                    if (res.error) {
+                        throw new Error(res.error.message)
+                    }
+
+                    return Promise.resolve(res.value[0].aia_name)
+                }).catch(err => {
+                    console.error(err)
+                    throw err;
+                })
+            }
+
+            const fetchAuditDetail = async (auditid, usermap) => {
+
+                try {
+                    var res = await fetch(
+                        `/api/data/v9.0/audits(${auditid})/Microsoft.Dynamics.CRM.RetrieveAuditDetails`
+                    ).then(res => res.json());
+
+
+                    let auditDetail = res.AuditDetail
+                    let newValueMap = auditDetail.NewValue
+                    let oldValueMap = auditDetail.OldValue
+
+                    for (let field in newValueMap) {
+                        if (field == '@odata.type') {
+                            continue;
+                        }
+                        let key = `${auditid}.${field}`
+                        const username = usermap.filter(x => x.systemuserid == auditMap[auditid]._userid_value)[0].fullname;
+
+                        const date = new Date(auditMap[auditid].createdon)
+
+                        let fieldMapping = field
+                        if (FieldsMapping[field]) {
+                            fieldMapping = FieldsMapping[field]
+                        }
+                        changelogMap[key] = {
+                            key: key,
+                            auditid: auditid,
+                            newValue: await parseValue(field, newValueMap[field]),
+                            oldValue: await parseValue(field, oldValueMap[field]),
+                            changedfield: fieldMapping,
+                            changedby: username,
+                            operation: 'Update',
+                            createdon: dateFormat(date),
+                            createdonRaw: date
+                        }
+                    }
+
+                    //show changed data
+                    onChange()
+
+                    return res.AuditDetail
+                } catch (err) {
+                    Xrm.UI.addGlobalNotification({
+                        level: 2,
+                        message: err.message,
+                        type: 2,
+                        showCloseButton: true
+                    })
+                }
+            }
+
+            const onChange = () => {
+                let items = []
+                for (let field in changelogMap) {
+                    items.push(changelogMap[field])
+                }
+
+                // console.log(changelogMap)
+
+                setItems(items)
+                setChangeLogMap({ ...changelogMap })
+                return items
+            }
+
+
+            React.useEffect(() => {
+                getData();
+            }, []);
+
+            const onRenderItemColumn = (item, index, column) => {
+                const key = column.key;
+                switch (key) {
+                    case 'oldValue':
+                    case 'newValue':
+                    case 'changedby':
+                        return String(item[key]);
+                        break;
+                    default:
+                        return String(item[key]);
+                }
+            };
+
+            const titleFormat = (current_datetime) => {
+                return `${current_datetime.getFullYear()}${window.parent.EAAShareSdk.padTo2Digits(current_datetime.getMonth() + 1)}${window.parent.EAAShareSdk.padTo2Digits(current_datetime.getDate())}`
+            }
+
+            const _export = () => {
+                console.log('0')
+                let exportMap = [];
+
+                for (let field in changelogMap) {
+                    let log = {
+                        "Changed Date": changelogMap[field].createdon,
+                        "Changed By": changelogMap[field].changedby,
+                        "Changed Field": changelogMap[field].changedfield,
+                        "Event": changelogMap[field].operation,
+                        "New Value": changelogMap[field].newValue,
+                        "Old Value": changelogMap[field].oldValue,
+                    }
+
+                    for (let field in log) {
+                        if (!log[field]) {
+                            log[field] = ""
+                        }
+                    }
+                    exportMap.push(log)
+                }
+
+                try {
+                    ExportExcelSdk._exportExcel({
+                        // the json you want to export
+                        xlsxData: JSON.stringify(exportMap),
+                        // the excel file name
+                        fileName: `EAA_changelog_${titleFormat(new Date())}`,
+                        // excel theme
+                        theme: "TableStyleLight4",
+                        // column config
+                        filterColumn: JSON.stringify([])
+                    })
+                }
+                catch (e) {
+                    console.log(e)
+                }
+
+
+            }
+
+            return (
+                <div className="box">
+                    <div id="shareButton"><FluentUIReact.DefaultButton text='Export' onClick={_export} style={{ backgroundColor: 'rgb(143,9,9)', color: 'white' }} /></div>
+                    <FluentUIReact.DetailsList
+                        items={items}
+                        columns={columns}
+                        // onItemInvoked={onItemInvoked}
+                        onRenderItemColumn={onRenderItemColumn}
+                        // columnReorderOptions={isColumnReorderEnabled ? getColumnReorderOptions() : undefined}
+                        ariaLabelForSelectionColumn="Toggle selection"
+                        ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+                        checkButtonAriaLabel="select row"
+                    />
+                </div>
+            )
+        };
+
+        ReactDOM.render(<Component />, document.getElementById('body'));
+
+    </script>
+</body>
+
+
+</html>

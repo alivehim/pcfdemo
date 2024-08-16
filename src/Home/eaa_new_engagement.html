@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Request</title>
+    <script src="./aia_eaa_sharesdk.js"></script>
+    <style>
+        :root {
+            --aia-blue: #1F78AD;
+            --aia-red: #D31145;
+            --aia-gray-main: #333D47;
+            --aia-gray-secondary: #5C646C;
+        }
+
+        body {
+            font-size: 16px;
+            color: var(--aia-gray-main);
+            font-family: SegoeUI-Semibold, "Segoe UI Semibold", "Segoe UI Regular", "Segoe UI";
+            padding: 10px 0;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .space-bottom {
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            cursor: pointer;
+        }
+
+        .content>.title>.line {
+            height: 12px;
+            width: 3px;
+            background-color: var(--aia-red);
+            border-radius: 1px;
+            margin-right: 4px;
+        }
+
+        .btn {
+            color: var(--aia-gray-secondary);
+            background: white;
+            border: solid 1px var(--aia-gray-secondary);
+            padding: 7px;
+            text-align: center;
+            width: 100px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn+.btn {
+            margin-left: 10px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .justify-around {
+            justify-content: space-around;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .w-auto {
+            width: auto;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        #loadingMask {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        #loadingMask svg {
+            width: 50%;
+            height: 50%;
+            max-width: 50px;
+            max-height: 50px;
+        }
+
+        .item {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 14px;
+            text-align: center;
+        }
+
+        .item-top {
+            margin-top: 5px;
+        }
+
+        .categoryservice {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+
+            font-size: 12px;
+            line-height: 16px;
+
+            background-color: #F4F5F5;
+            margin-top: 10px;
+            justify-content: center;
+            min-width: 120px;
+            min-height: 60px;
+            padding: 5px 5px;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-around w-auto h-full">
+    <div id="loadingMask">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            style="margin: auto; display: block;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+            <circle cx="50" cy="50" fill="none" stroke="#d31145" stroke-width="10" r="35"
+                stroke-dasharray="164.93361431346415 56.97787143782138">
+                <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s"
+                    values="0 50 50;360 50 50" keyTimes="0;1"></animateTransform>
+            </circle>
+        </svg>
+    </div>
+
+    <div class="content" onclick="newRequest(RequestType.PwcNon_Tax)">
+        <svg width="63" height="63" viewBox="0 0 63 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="31.9672" cy="31.5" r="31" fill="#D31145" />
+            <path
+                d="M26.467 32.1591C26.3571 30.8592 26.445 27.7981 27.6753 25.9526C28.9056 24.1071 30.6412 23.243 31.3553 23.0416C32.4904 22.8402 35.1231 22.5582 36.5731 23.0416C38.0231 23.5249 39.4841 25.1837 40.0334 25.9526C40.4545 26.7765 41.3076 28.8526 41.3516 30.5663C41.3955 32.2799 41.3699 33.9899 41.3516 34.6307"
+                stroke="white" />
+            <rect x="31.6845" y="21.6686" width="4.61368" height="0.768946" rx="0.384473" stroke="white"
+                stroke-width="0.768946" />
+            <path
+                d="M24.1597 33.7519H27.8396L32.4533 35.3997H36.298C36.591 35.4546 37.1768 35.7732 37.1768 36.608C37.1768 37.4429 36.1516 37.7981 35.6389 37.8713H31.245C30.952 37.9628 30.3442 38.2777 30.2563 38.805M32.4533 21.3389L30.6408 17.9885L32.4533 17.2196L33.7715 17.9885L35.6389 17.2196L37.1768 17.9885L35.6389 21.3389H32.4533Z"
+                stroke="white" />
+            <path d="M19.3817 41.0569H24.0503V32.7084H19.3817" stroke="white" />
+            <path
+                d="M24.2152 40.1782H26.0827L33.113 42.6498C33.2046 42.7779 33.5524 42.9574 34.2115 42.6498C34.8706 42.3422 41.0771 38.8966 44.098 37.2122C44.336 36.9193 44.6692 36.1686 44.098 35.5096C43.5268 34.8505 42.5052 35.2349 42.0658 35.5096L36.9028 37.2122"
+                stroke="white" />
+            <rect x="32.7913" y="24.5339" width="1.21905" height="1.21905" fill="white" />
+            <rect x="32.7913" y="33.0672" width="1.21905" height="1.21905" fill="white" />
+            <path
+                d="M33.6273 29.0329L33.7276 28.8039C33.3716 28.6481 33.1215 28.5128 32.9658 28.3994C32.8157 28.2848 32.7217 28.1706 32.6688 28.06C32.6153 27.9448 32.5814 27.7817 32.5814 27.5584C32.5814 27.2776 32.6639 27.0886 32.8042 26.9575C32.9468 26.8243 33.1584 26.7426 33.4723 26.7426C33.8788 26.7426 34.3062 26.853 34.7572 27.0848L35.0265 27.2232L35.1115 26.9327L35.3222 26.2124L35.3791 26.0176L35.2002 25.9218C34.6771 25.6419 34.1049 25.5029 33.4882 25.5029C32.8824 25.5029 32.3706 25.6821 31.979 26.0596C31.5851 26.4393 31.3977 26.9452 31.3977 27.5486C31.3977 28.1068 31.521 28.5854 31.7897 28.9636L31.7897 28.9636L31.7905 28.9647C32.0595 29.3389 32.4905 29.6429 33.0539 29.8897L33.0543 29.8898C33.4362 30.0564 33.7053 30.1992 33.8726 30.3174L33.8739 30.3183C34.0407 30.4346 34.1428 30.5512 34.1987 30.6631L34.1987 30.6631L34.2012 30.6679C34.2583 30.7762 34.2956 30.9334 34.2956 31.1547C34.2956 31.4729 34.2008 31.6924 34.0346 31.8465C33.87 31.996 33.602 32.0921 33.1861 32.0921C32.9323 32.0921 32.6747 32.0593 32.4128 31.9927C32.1489 31.9257 31.9073 31.8348 31.6869 31.721L31.3221 31.5324V31.9431V32.7412V32.8844L31.4458 32.9569C31.8716 33.2064 32.4529 33.3172 33.1622 33.3172C33.8456 33.3172 34.4163 33.1277 34.8444 32.7234C35.2764 32.3154 35.4793 31.755 35.4793 31.0768C35.4793 30.551 35.3544 30.0981 35.0833 29.7392C34.8166 29.3826 34.3505 29.0758 33.7273 28.8038L33.6273 29.0329ZM33.6273 29.0329C34.2368 29.2989 34.6555 29.5844 34.8835 29.8894L32.4427 28.1667C32.5169 28.3224 32.6415 28.4668 32.8164 28.5998C32.9939 28.7296 33.2642 28.8739 33.6273 29.0329ZM34.0169 30.1133C33.8287 29.9802 33.5412 29.8294 33.1543 29.6607C32.6136 29.4238 32.2267 29.1432 31.9935 28.8188C31.763 28.4944 31.6477 28.071 31.6477 27.5486C31.6477 27.0004 31.816 26.564 32.1525 26.2396C32.4891 25.9151 32.9343 25.7529 33.4882 25.7529C34.0659 25.7529 34.5972 25.8827 35.0822 26.1422L34.0169 30.1133Z"
+                fill="white" stroke="white" stroke-width="0.5" />
+            <path d="M46.833 38.3668L38.3929 47.0811" stroke="white" stroke-width="2" stroke-miterlimit="10" />
+            <path d="M38.2544 38.227L46.9718 47.2242" stroke="white" stroke-width="2" stroke-miterlimit="10" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M42.6124 43.1738L46.7475 47.4416L47.1963 47.0067L43.0474 42.7247L47.0576 38.5842L46.6087 38.1493L42.6123 42.2756L38.4789 38.0095L38.03 38.4444L42.1772 42.7247L38.1686 46.8636L38.6176 47.2984L42.6124 43.1738Z"
+                fill="white" />
+        </svg>
+        <label class="item item-top">PwC Non-Tax</label>
+        <label class="item">Engagement</label>
+
+        <div class="categoryservice">
+            <label>-PwC Audit Services</label>
+            <label>-PwC Audit-related Service</label>
+            <label>-PwC All other Services</label>
+        </div>
+    </div>
+    <div class="content" onclick="newRequest(RequestType.PwCTax)">
+        <svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="31" cy="31" r="31" fill="#1F78AD" />
+            <path
+                d="M45.7569 33.7764C45.7569 36.2868 43.7371 37.8673 41.2456 37.8673C38.7541 37.8673 37.1854 36.2868 37.1854 33.7764C37.1854 31.266 39.2052 29.2309 41.6967 29.2309C44.1882 29.2309 45.7569 31.266 45.7569 33.7764Z"
+                fill="white" />
+            <path
+                d="M40.7945 37.9128C43.5657 37.9128 45.8058 35.6503 45.8058 32.8673C45.8058 30.0843 43.5657 27.8218 40.7945 27.8218C38.0233 27.8218 35.7832 30.0843 35.7832 32.8673C35.7832 35.6503 38.0233 37.9128 40.7945 37.9128Z"
+                stroke="white" />
+            <line x1="23.4993" y1="20.2991" x2="28.3151" y2="20.2991" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="30.7174" y1="20.2991" x2="31.9242" y2="20.2991" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="34.3264" y1="20.2991" x2="38.24" y2="20.2991" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="23.4993" y1="23.0264" x2="25.6083" y2="23.0264" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="28.0106" y1="23.0264" x2="32.8264" y2="23.0264" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="35.2286" y1="23.0264" x2="38.2399" y2="23.0264" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <line x1="0.75" y1="-0.75" x2="8.21577" y2="-0.75"
+                transform="matrix(0.704434 -0.70977 0.704434 0.70977 24.5538 36.5037)" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <path
+                d="M24.5539 32.4582C25.024 32.4582 25.3868 32.1704 25.6088 31.8347C25.8335 31.4952 25.9561 31.0553 25.9561 30.5946C25.9561 30.1338 25.8335 29.6939 25.6088 29.3544C25.3868 29.0188 25.024 28.7309 24.5539 28.7309C24.0838 28.7309 23.721 29.0188 23.4989 29.3544C23.2743 29.6939 23.1516 30.1338 23.1516 30.5946C23.1516 31.0553 23.2743 31.4952 23.4989 31.8347C23.721 32.1704 24.0838 32.4582 24.5539 32.4582Z"
+                stroke="white" />
+            <path
+                d="M29.9673 37.0037C30.4374 37.0037 30.8002 36.7158 31.0223 36.3802C31.2469 36.0407 31.3696 35.6008 31.3696 35.14C31.3696 34.6793 31.2469 34.2394 31.0223 33.8999C30.8002 33.5643 30.4374 33.2764 29.9673 33.2764C29.4972 33.2764 29.1344 33.5643 28.9123 33.8999C28.6877 34.2394 28.5651 34.6793 28.5651 35.14C28.5651 35.6008 28.6877 36.0407 28.9123 36.3802C29.1344 36.7158 29.4972 37.0037 29.9673 37.0037Z"
+                stroke="white" />
+            <path
+                d="M43.5013 41.9582V42.5946C43.5013 44.2514 42.1581 45.5946 40.5013 45.5946H23.0426C21.3858 45.5946 20.0426 44.2514 20.0426 42.5946V20.14"
+                stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M22.7493 45.5946V45.5946C24.2442 45.5946 25.456 44.3827 25.456 42.8878V41.0491" stroke="white"
+                stroke-width="1.5" stroke-linecap="round" />
+            <path d="M25.5327 41.0491H43.501V43.147" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            <path
+                d="M20.0425 42.8673V18.3218M41.6967 25.5946V18.5946C41.6967 16.9377 40.3535 15.5946 38.6967 15.5946H18.238"
+                stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            <path
+                d="M20.0426 40.14V17.7374C20.0426 16.554 19.0832 15.5946 17.8997 15.5946V15.5946C16.7162 15.5946 15.7568 16.554 15.7568 17.7374V19.2309"
+                stroke="white" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <label class="item item-top">PwC Tax</label>
+        <label class="item">Engagement</label>
+        <div class="categoryservice">
+            <label>-PwC Tax Service</label>
+            <label></label>
+            <label></label>
+        </div>
+
+    </div>
+    <div class="content" onclick="newRequest(RequestType.Non_PwcTax)">
+        <svg width="63" height="63" viewBox="0 0 63 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="31.9672" cy="31.5" r="31" fill="#F7C926" />
+            <path
+                d="M28.467 34.1591C28.3571 32.8592 28.445 29.7981 29.6753 27.9526C30.9056 26.1071 32.6412 25.243 33.3553 25.0416C34.4904 24.8402 37.1231 24.5582 38.5731 25.0416C40.0231 25.5249 41.4841 27.1837 42.0334 27.9526C42.4545 28.7765 43.3076 30.8526 43.3516 32.5663C43.3955 34.2799 43.3699 35.9899 43.3516 36.6307"
+                stroke="white" />
+            <rect x="33.6845" y="23.6686" width="4.61368" height="0.768946" rx="0.384473" stroke="white"
+                stroke-width="0.768946" />
+            <path
+                d="M26.1597 35.7519H29.8396L34.4533 37.3997H38.298C38.591 37.4546 39.1768 37.7732 39.1768 38.608C39.1768 39.4429 38.1516 39.7981 37.6389 39.8713H33.245C32.952 39.9628 32.3442 40.2777 32.2563 40.805M34.4533 23.3389L32.6408 19.9885L34.4533 19.2196L35.7715 19.9885L37.6389 19.2196L39.1768 19.9885L37.6389 23.3389H34.4533Z"
+                stroke="white" />
+            <path d="M21.3817 43.0569H26.0503V34.7084H21.3817" stroke="white" />
+            <path
+                d="M26.2152 42.1782H28.0827L35.113 44.6498C35.2046 44.7779 35.5524 44.9574 36.2115 44.6498C36.8706 44.3422 43.0771 40.8966 46.098 39.2122C46.336 38.9193 46.6692 38.1686 46.098 37.5096C45.5268 36.8505 44.5052 37.2349 44.0658 37.5096L38.9028 39.2122"
+                stroke="white" />
+            <rect x="34.7913" y="26.5339" width="1.21905" height="1.21905" fill="white" />
+            <rect x="34.7913" y="35.0672" width="1.21905" height="1.21905" fill="white" />
+            <path
+                d="M35.6273 31.0329L35.7276 30.8039C35.3716 30.6481 35.1215 30.5128 34.9658 30.3994C34.8157 30.2848 34.7217 30.1706 34.6688 30.06C34.6153 29.9448 34.5814 29.7817 34.5814 29.5584C34.5814 29.2776 34.6639 29.0886 34.8042 28.9575C34.9468 28.8243 35.1584 28.7426 35.4723 28.7426C35.8788 28.7426 36.3062 28.853 36.7572 29.0848L37.0265 29.2232L37.1115 28.9327L37.3222 28.2124L37.3791 28.0176L37.2002 27.9218C36.6771 27.6419 36.1049 27.5029 35.4882 27.5029C34.8824 27.5029 34.3706 27.6821 33.979 28.0596C33.5851 28.4393 33.3977 28.9452 33.3977 29.5486C33.3977 30.1068 33.521 30.5854 33.7897 30.9636L33.7897 30.9636L33.7905 30.9647C34.0595 31.3389 34.4905 31.6429 35.0539 31.8897L35.0543 31.8898C35.4362 32.0564 35.7053 32.1992 35.8726 32.3174L35.8739 32.3183C36.0407 32.4346 36.1428 32.5512 36.1987 32.6631L36.1987 32.6631L36.2012 32.6679C36.2583 32.7762 36.2956 32.9334 36.2956 33.1547C36.2956 33.4729 36.2008 33.6924 36.0346 33.8465C35.87 33.996 35.602 34.0921 35.1861 34.0921C34.9323 34.0921 34.6747 34.0593 34.4128 33.9927C34.1489 33.9257 33.9073 33.8348 33.6869 33.721L33.3221 33.5324V33.9431V34.7412V34.8844L33.4458 34.9569C33.8716 35.2064 34.4529 35.3172 35.1622 35.3172C35.8456 35.3172 36.4163 35.1277 36.8444 34.7234C37.2764 34.3154 37.4793 33.755 37.4793 33.0768C37.4793 32.551 37.3544 32.0981 37.0833 31.7392C36.8166 31.3826 36.3505 31.0758 35.7273 30.8038L35.6273 31.0329ZM35.6273 31.0329C36.2368 31.2989 36.6555 31.5844 36.8835 31.8894L34.4427 30.1667C34.5169 30.3224 34.6415 30.4668 34.8164 30.5998C34.9939 30.7296 35.2642 30.8739 35.6273 31.0329ZM36.0169 32.1133C35.8287 31.9802 35.5412 31.8294 35.1543 31.6607C34.6136 31.4238 34.2267 31.1432 33.9935 30.8188C33.763 30.4944 33.6477 30.071 33.6477 29.5486C33.6477 29.0004 33.816 28.564 34.1525 28.2396C34.4891 27.9151 34.9343 27.7529 35.4882 27.7529C36.0659 27.7529 36.5972 27.8827 37.0822 28.1422L36.0169 32.1133Z"
+                fill="white" stroke="white" stroke-width="0.5" />
+            <line x1="0.75" y1="-0.75" x2="8.21577" y2="-0.75"
+                transform="matrix(0.704434 -0.70977 0.704434 0.70977 19.5538 31.5037)" stroke="white" stroke-width="1.5"
+                stroke-linecap="round" />
+            <path
+                d="M19.5539 27.4582C20.024 27.4582 20.3868 27.1704 20.6088 26.8347C20.8335 26.4952 20.9561 26.0553 20.9561 25.5946C20.9561 25.1338 20.8335 24.6939 20.6088 24.3544C20.3868 24.0188 20.024 23.7309 19.5539 23.7309C19.0838 23.7309 18.721 24.0188 18.4989 24.3544C18.2743 24.6939 18.1516 25.1338 18.1516 25.5946C18.1516 26.0553 18.2743 26.4952 18.4989 26.8347C18.721 27.1704 19.0838 27.4582 19.5539 27.4582Z"
+                stroke="white" />
+            <path
+                d="M24.9673 32.0037C25.4374 32.0037 25.8002 31.7158 26.0223 31.3802C26.2469 31.0407 26.3696 30.6008 26.3696 30.14C26.3696 29.6793 26.2469 29.2394 26.0223 28.8999C25.8002 28.5643 25.4374 28.2764 24.9673 28.2764C24.4972 28.2764 24.1344 28.5643 23.9123 28.8999C23.6877 29.2394 23.5651 29.6793 23.5651 30.14C23.5651 30.6008 23.6877 31.0407 23.9123 31.3802C24.1344 31.7158 24.4972 32.0037 24.9673 32.0037Z"
+                stroke="white" />
+        </svg>
+        <label class="item item-top">Non-PwC Tax</label>
+        <label class="item">Engagement</label>
+        <div class="categoryservice">
+
+        </div>
+    </div>
+
+</body>
+<script>
+
+    const Tables = {
+        approval: "aia_eaa_approval",
+        comment: "aia_eaa_comment",
+        config: "aia_eaa_config",
+        contact: "aia_eaa_contact",
+        country: "aia_eaa_country",
+        entity: "aia_eaa_entity",
+        form: "aia_eaa_form",
+        form_attachment: "aia_eaa_form_attachment",
+        local_viewer: "aia_eaa_local_viewer",
+        notification: "aia_eaa_notification",
+        sla_calculation: "aia_eaa_sla_calculation",
+        sla_priority: "aia_eaa_sla_priority",
+        subcategory: "aia_eaa_subcategory",
+        team_role: "aia_eaa_team_role",
+        timeline: "aia_eaa_timeline",
+        wf_template: "aia_eaa_wf_template",
+    }
+
+    const FormStatus = {
+        Initiator_Pending: 589450000,
+        PendingLocalApproverApproval: 589450001,
+        PendingGroupFinanceCoordinatorApproval: 589450002,
+        PendingHeadOfGroupTaxApproval: 589450004,
+        PendingRegionalCFOApproval: 589450005,
+        Initiator_ResubmissionPending: 589450006,
+        LocalApprover_Rejected: 589450008,
+        GroupFinanceCoordinator_Rejected: 589450009,
+        HeadOfGroupTax_Rejected: 589450011,
+        RegionalCFO_Rejected: 589450012,
+        ActualFeeUpdate_Pending: 589450013,
+        ActualFeeUpdate_Completed: 589450014,
+    }
+
+    const RequestType = {
+        PwCTax: 589450000,
+        PwcNon_Tax: 589450001,
+        Non_PwcTax: 589450002,
+    }
+
+    const ApprovalStatus = {
+        Approved: 589450000,
+        Rejected: 589450001,
+        Completed: 589450002,
+        Pending: 589450003,
+        ResubmissionPending: 589450004,
+    }
+
+    const WorkflowStages = {
+        New: 589450000,
+        RequesterSubmit: 589450001,
+        LocalApproverApprove: 589450002,
+        GroupFinanceCoordinatorApprove: 589450003,
+        HeadOfGroupTaxApprove: 589450005,
+        RegionalCFOApprove: 589450006,
+        LocalApproverReject: 589450007,
+        GroupFinanceCoordinatorReject: 589450008,
+        HeadOfGroupTaxReject: 589450010,
+        RegionalCFOReject: 589450011,
+        LocalApproverReopen: 589450012,
+        GroupFinanceCoordinatorReopen: 589450013,
+        HeadOfGroupTaxReopen: 589450015,
+        RegionalCFOReopen: 589450016,
+        ActualFeeUpdatePending: 589450100,
+        ActualFeeUpdateCompleted: 589450200,
+
+    }
+
+    const Stages = {
+        Initiator: 589450000,
+        LocalApprover: 589450001,
+        GroupFinanceCoordinator: 589450003,
+        RegionalCFO: 589450005,
+        HeadofGroupTax: 589450006,
+        ActualFeeUpdate: 589450007,
+    }
+
+    const Category = {
+        PwCAuditServices: 589450000,
+        PwCAudit_relatedServices: 589450001,
+        PwCTaxServices: 589450002,
+        PwCAllOtherServices: 589450003,
+        Non_PwCTaxServices: 589450004,
+    }
+
+    const Consts = {
+        EAA_Workflow_Template: "EAA_Workflow_Template",
+        SubCategoryLink: "EAA:SharePoint:Sub-Category list of pre-approved services",
+        PreApprovalServicesLink: "EAA:SharePoint:AIA Group External Auditor Appointment and Independence Policy"
+    }
+
+    const Forms = {
+        "EAA_Engagement": "7e7ac2ed-c1d1-ec11-a7b5-000d3a80b291"
+    }
+
+    window.createEAAForm = async (type) => {
+        const wfDefinition = await fetch(
+            `/api/data/v9.0/${Tables.wf_template}s?$filter=aia_name eq '${Consts.EAA_Workflow_Template}'`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Prefer': 'return=representation',
+                }
+            }
+        ).then(res => res.json()).then(res => {
+            if (res.error) {
+                throw new Error(res.error.message)
+            }
+
+            return res
+        })
+
+        if (wfDefinition.value.length === 0) {
+            throw new Error("No wf_template data.")
+        }
+
+        const subCategoryLink = await getMappingValue(Consts.SubCategoryLink);
+        const preApprovalServicesLink = await getMappingValue(Consts.PreApprovalServicesLink);
+        const wf_templateId = wfDefinition.value[0].aia_eaa_wf_templateid
+
+        const userName = window.parent.Xrm._globalContext.userSettings.userName
+        const currentUserId = window.parent.Xrm._globalContext.userSettings.userId.replace(/[{}]*/g, "").toLowerCase()
+
+        let formData = {
+            "aia_sys_wf_template@odata.bind": `/aia_eaa_wf_templates(${wf_templateId})`,
+            "aia_sys_form_type": type,
+            "aia_sys_active": false,
+            "aia_name": 'Draft',
+            "aia_eaa_form_status": FormStatus.Initiator_Pending,
+            "aia_eaa_approval_status": ApprovalStatus.Pending,
+            "aia_eaa_workflow_stage": WorkflowStages.New,
+            "aia_stage": Stages.Initiator,
+            "aia_requester_name": window.parent.Xrm._globalContext.userSettings.userName,
+            "aia_eaa_requester@odata.bind": `/systemusers(${currentUserId})`,
+            "aia_eaa_sub_cate_pre_approved_svc": subCategoryLink,
+            "aia_eaa_pre_approval_svc_by_ext_auditor": preApprovalServicesLink,
+            "aia_eaa_latest_modified_on": new Date()
+        }
+
+        if (type == RequestType.Non_PwcTax) {
+            formData["aia_eaa_category"] = Category.Non_PwCTaxServices
+        }
+
+        return fetch(
+            `/api/data/v9.0/${Tables.form}s`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Prefer': 'return=representation',
+                },
+                body: JSON.stringify(formData)
+            }
+        ).then(res => res.json()).then(res => {
+            if (res.error) {
+                throw new Error(res.error.message)
+            }
+            return res
+        })
+    }
+
+    window.getMappingValue = async (key) => {
+
+        return await fetch(
+            `/api/data/v9.0/aia_eaa_configs/?$filter=aia_name eq '${key}'`,
+        ).then(res => res.json()).then(res => {
+
+            if (res.error) {
+                throw new Error(res.error.message)
+            }
+
+            if (res.value.length === 0) {
+                throw new Error('file 404')
+            }
+
+            return Promise.resolve(res.value[0].aia_eaa_value)
+        })
+    }
+
+    window.newRequest = (type) => {
+
+        window.addLoading()
+        window.createEAAForm(type).then(res => {
+            window.navigateToEAAForm(res, type)
+        }).catch(err => {
+            console.log(err)
+            window.parent.Xrm.UI.addGlobalNotification({
+                level: 2,
+                message: err?.message || err,
+                type: 2,
+                showCloseButton: true,
+            })
+            window.removeLoading()
+        })
+    }
+
+    /**
+     * add a loading mask
+     */
+    window.addLoading = () => {
+        document.querySelector("#loadingMask").style.display = "flex"
+    }
+
+    /**
+     * remove the loading mask
+     */
+    window.removeLoading = () => {
+        document.querySelector("#loadingMask").style.display = "none"
+    }
+
+
+    window.navigateToEAAForm = (eaaForm, type) => {
+
+
+        window.parent.Xrm.Navigation.navigateTo({
+            pageType: 'entityrecord',
+            entityName: Tables.form,
+            entityId: eaaForm.aia_eaa_formid,
+            formId: Forms.EAA_Engagement,
+            data: {
+                aia_sys_wf_request_guid: eaaForm.aia_eaa_formid,
+            }
+        })
+
+
+        // auto confirm (auto find the dialog and click yes)
+        _doUntil(
+            () => {
+                window.parent.document.querySelector(`div[id*="modalDialogRoot"] button[id*="confirmButton_"]`).click()
+            },
+            () => window.parent.document.querySelector(`div[id*="modalDialogRoot"] button[id*="confirmButton_"]`)
+        )
+    }
+
+    window._doUntil = (doFunc, untilFunc, maxMs = 20000, delayMs = 50) => {
+        const start = new Date();
+
+        const setTimeoutFunc = () => {
+            if (untilFunc()) {
+                doFunc()
+            } else if (new Date() - start < maxMs) {
+                setTimeout(() => {
+                    setTimeoutFunc()
+                }, delayMs)
+            }
+        }
+        setTimeoutFunc()
+    }
+
+
+
+
+</script>
+
+</html>
